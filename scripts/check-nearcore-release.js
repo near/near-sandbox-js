@@ -4,13 +4,7 @@ const fs = require('fs');
 const path = require('path');
 
 const NEARCORE_REPO = 'near/nearcore';
-const LIB_RS_PATH = 'crate/src/lib.rs';
-const GET_BINARY_TS_PATH = 'npm/src/getBinary.ts';
-
-const FILES_TO_UPDATE = {
-    libRs: updateLibRs,
-    getBinaryTs: updateGetBinaryTs
-};
+const GET_BINARY_TS_PATH = 'src/getBinary.ts';
 
 async function makeRequest(url) {
     const response = await fetch(url);
@@ -36,12 +30,12 @@ async function getLatestNearCoreVersion() {
 
 function getCurrentVersion() {
     try {
-        const libRsPath = path.join(process.cwd(), LIB_RS_PATH);
-        const content = fs.readFileSync(libRsPath, 'utf8');
-        const match = content.match(/DEFAULT_NEAR_SANDBOX_VERSION: &str = "([^"]+)"/);
+        const getBinaryTsPath = path.join(process.cwd(), GET_BINARY_TS_PATH);
+        const content = fs.readFileSync(getBinaryTsPath, 'utf8');
+        const match = content.match(/DEFAULT_NEAR_SANDBOX_VERSION = "([^"]+)"/);
 
         if (!match) {
-            throw new Error('Could not find DEFAULT_NEAR_SANDBOX_VERSION in lib.rs');
+            throw new Error('Could not find DEFAULT_NEAR_SANDBOX_VERSION in getBinary.ts');
         }
 
         const version = match[1];
@@ -53,43 +47,14 @@ function getCurrentVersion() {
     }
 }
 
-function updateLibRs(newVersion, releaseDate) {
-    try {
-        const libRsPath = path.join(process.cwd(), LIB_RS_PATH);
-        let content = fs.readFileSync(libRsPath, 'utf8');
-
-        content = content.replace(
-            /DEFAULT_NEAR_SANDBOX_VERSION: &str = "[^"]*";/,
-            `DEFAULT_NEAR_SANDBOX_VERSION: &str = "${newVersion}";`
-        );
-
-        const formattedReleaseDate = new Date(releaseDate).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
-
-        content = content.replace(
-            /Currently pointing to nearcore@v[^ ]* released on .*$/m,
-            `Currently pointing to nearcore@v${newVersion} released on ${formattedReleaseDate}`
-        );
-
-        fs.writeFileSync(libRsPath, content, 'utf8');
-        console.log(`Updated ${LIB_RS_PATH} with version ${newVersion}`);
-    } catch (error) {
-        console.error('Error updating lib.rs:', error.message);
-        throw error;
-    }
-}
-
 function updateGetBinaryTs(newVersion) {
     try {
         const getBinaryPath = path.join(process.cwd(), GET_BINARY_TS_PATH);
         let content = fs.readFileSync(getBinaryPath, 'utf8');
 
         content = content.replace(
-            /\/nearcore\/[^\/]+\/[^\/]+\/near-sandbox\.tar\.gz/,
-            `/nearcore/\${platform}-\${arch}/${newVersion}/near-sandbox.tar.gz`
+            /DEFAULT_NEAR_SANDBOX_VERSION = "[^"]+"/,
+            `DEFAULT_NEAR_SANDBOX_VERSION = "${newVersion}"`
         );
 
         fs.writeFileSync(getBinaryPath, content, 'utf8');
@@ -114,10 +79,7 @@ async function main() {
 
         console.log(`\n🔄 Update needed: ${currentVersion} → ${latestVersion}\n`);
 
-        Object.entries(FILES_TO_UPDATE).forEach(([key, updateFunction]) => {
-            console.log(`Updating ${key}...`);
-            updateFunction(latestVersion, releaseDate);
-        });
+        updateGetBinaryTs(latestVersion, releaseDate);
 
         console.log('\n✅ Files updated successfully. Changes will be detected by git status.');
     } catch (error) {

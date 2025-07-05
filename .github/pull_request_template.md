@@ -6,7 +6,7 @@ Happy contributing!
 ## Pre-flight checklist
 
 - [ ] Commit messages follow the [conventional commits](https://www.conventionalcommits.org/) spec
-- [ ] **If this changes code in a published NPM package**: I have run `npm run changeset` to create a `changeset` JSON document appropriate for this change.
+- [ ] I have run `npm run changeset` to create a `changeset` JSON document appropriate for this change.
 
 ## Motivation
 
