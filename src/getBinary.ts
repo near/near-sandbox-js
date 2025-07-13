@@ -2,6 +2,8 @@ import { Binary } from ".";
 import { join } from "path";
 import * as os from "os";
 
+const DEFAULT_NEAR_SANDBOX_VERSION = "2.6.3";
+
 function getPlatform() {
   const type = os.type();
   const arch = os.arch();
@@ -18,7 +20,7 @@ function getPlatform() {
 
 export function AWSUrl(): string {
   const [platform, arch] = getPlatform();
-  return `https://s3-us-west-1.amazonaws.com/build.nearprotocol.com/nearcore/${platform}-${arch}/2.6.3/near-sandbox.tar.gz`;
+  return `https://s3-us-west-1.amazonaws.com/build.nearprotocol.com/nearcore/${platform}-${arch}/${DEFAULT_NEAR_SANDBOX_VERSION}/near-sandbox.tar.gz`;
 }
 
 export function getBinary(name: string = "near-sandbox"): Promise<Binary> {
