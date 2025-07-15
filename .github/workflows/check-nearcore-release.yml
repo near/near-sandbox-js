@@ -70,10 +70,10 @@ jobs:
         if: steps.check-changes.outputs.update_needed == 'true'
         uses: peter-evans/create-pull-request@v7
         with:
-          token: ${{ secrets.MY_GITHUB_TOKEN }}
+          token: ${{ secrets.RELEASE_PLZ_GITHUB_TOKEN }}
           add-paths: |
-            npm/src/getBinary.ts
-            npm/.changeset/
+            src/getBinary.ts
+            .changeset/
           commit-message: "Update nearcore version to ${{ steps.latest-version.outputs.latest_version }}"
           title: "Update nearcore version to ${{ steps.latest-version.outputs.latest_version }}"
           branch: "update-nearcore-${{ steps.latest-version.outputs.latest_version }}"
@@ -87,7 +87,7 @@ jobs:
 
             ## Changes
             
-            - Updated `DEFAULT_NEAR_SANDBOX_VERSION` in `npm/src/getBinary.ts`
+            - Updated `DEFAULT_NEAR_SANDBOX_VERSION` in `src/getBinary.ts`
             
             *This PR was automatically created by the Check Nearcore Release workflow.*
           base: main
