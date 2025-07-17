@@ -18,25 +18,29 @@ jobs:
     environment: NPM
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.4.1
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 16.x
+          node-version: 20.18.3
 
       - name: Install Dependencies
-        run: npm install
+        run: pnpm install
 
       - name: Build Packages
-        run: npm run build
+        run: pnpm build
 
       - name: Create Release Pull Request or Publish to NPM
         # use changesets/action to create PR and auto release
         uses: changesets/action@v1
         with:
-          publish: npm run release
-          cwd: "${{ github.workspace }}"
+          publish: pnpm release
           commit: "chore(release): publish packages"
           title: "Publish packages"
           createGithubReleases: true
