@@ -1,9 +1,9 @@
 import { stat, rm as RM } from "fs/promises";
 import { join } from "path";
 
-export async function fileExists(s: string): Promise<boolean> {
+export async function fileExists(filePath: string): Promise<boolean> {
   try {
-    const f = await stat(s);
+    const f = await stat(filePath);
     return f.isFile();
   } catch {
     return false;

@@ -3,3 +3,4 @@ nearcore/
 node_modules/
 builds
 test_destination/
+.vscode/

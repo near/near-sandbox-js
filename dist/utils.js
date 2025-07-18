@@ -3,9 +3,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.rm = exports.inherit = exports.searchPath = exports.fileExists = void 0;
 const promises_1 = require("fs/promises");
 const path_1 = require("path");
-async function fileExists(s) {
+async function fileExists(filePath) {
     try {
-        const f = await (0, promises_1.stat)(s);
+        const f = await (0, promises_1.stat)(filePath);
         return f.isFile();
     }
     catch {

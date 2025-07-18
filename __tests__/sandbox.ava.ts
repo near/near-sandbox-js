@@ -1,9 +1,11 @@
 import test from 'ava';
-import { fileExists } from '../src/utils';
+import { existsSync } from "fs";
+import { Sandbox } from '../src/server/Sandbox';
+import { SandboxConfig } from '../src/server/interfaces';
 
-test('Sandbox.start() returns a valid instance with default config', async (t) => {
+test('Sandbox.start() returns a valid instance with default config and version', async (t) => {
     const sandbox = await Sandbox.start();
-
+    console.log(`Starting sandbox with default config and version${sandbox}`);
     t.truthy(sandbox);
     t.truthy(sandbox.rpcUrl);
     t.truthy(sandbox.homeDir);
@@ -13,9 +15,8 @@ test('Sandbox.start() returns a valid instance with default config', async (t) =
     await sandbox.tearDown();
 });
 
-test('Sandbox.start() accepts custom config', async (t) => {
+test('Sandbox.start() accepts custom config and version', async (t) => {
     const customConfig: SandboxConfig = {
-        version: '2.0.0',
         rpcPort: 3030,
         additionalGenesis: JSON.stringify({ epoch_length: 100 }),
         additionalAccounts: [{
@@ -25,7 +26,7 @@ test('Sandbox.start() accepts custom config', async (t) => {
             balance: BigInt(1000000000000000000000000),
         }],
     };
-    const sandbox = await Sandbox.start(customConfig);
+    const sandbox = await Sandbox.start(customConfig, '2.6.0');
 
     t.truthy(sandbox);
 
@@ -35,12 +36,12 @@ test('Sandbox.start() accepts custom config', async (t) => {
 test('Sandbox.tearDown() cleans up resources', async t => {
   const sandbox = await Sandbox.start();
 
-  const dirExistsBefore = await fileExists(sandbox.homeDir);
+  const dirExistsBefore =  existsSync(sandbox.homeDir);
   t.true(dirExistsBefore);
 
   await sandbox.tearDown();
 
-  const dirExistsAfter = await fileExists(sandbox.homeDir);
+  const dirExistsAfter =  existsSync(sandbox.homeDir);
 
   t.false(dirExistsAfter);
 });

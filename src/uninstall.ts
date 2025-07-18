@@ -1,3 +1,3 @@
-import { getBinary } from "./getBinary";
+// import { getBinary } from "./binary/binaryUtils";
 
-getBinary().then(async (bin) => await bin.uninstall());
+// getBinary().then(async (bin) => await bin.uninstall());
