@@ -1,8 +1,6 @@
-import { AWSUrl } from "./binaryUtils";
+import { AWSUrl, fileExists } from "./binaryUtils";
 import { join } from "path";
 import * as os from "os";
-import { mkdir } from "fs/promises";
-import { fileExists } from "../utils";
 import { promisify } from "util";
 import * as stream from "stream";
 import * as tar from "tar";
@@ -43,7 +41,7 @@ export async function dowloadBin(version: string): Promise<string> {
 // Returns a path to the binary in the form of: `{home}/.near/near-sandbox-{version}` || `{$OUT_DIR}/.near/near-sandbox-{version}`
 async function getDownloadPath(version: string): Promise<string> {
     const out = process.env["OUT_DIR"] ?? join(os.homedir(), ".near", `near-sandbox-${version}`);
-    await mkdir(out, { recursive: true });
+    await fs.mkdir(out, { recursive: true });
     return out;
 }
 

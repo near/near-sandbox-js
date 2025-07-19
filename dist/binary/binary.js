@@ -4,8 +4,6 @@ exports.ensureBinWithVersion = exports.installable = exports.checkForVersion = e
 const binaryUtils_1 = require("./binaryUtils");
 const path_1 = require("path");
 const os = require("os");
-const promises_1 = require("fs/promises");
-const utils_1 = require("../utils");
 const util_1 = require("util");
 const stream = require("stream");
 const tar = require("tar");
@@ -40,7 +38,7 @@ exports.dowloadBin = dowloadBin;
 async function getDownloadPath(version) {
     var _a;
     const out = (_a = process.env["OUT_DIR"]) !== null && _a !== void 0 ? _a : (0, path_1.join)(os.homedir(), ".near", `near-sandbox-${version}`);
-    await (0, promises_1.mkdir)(out, { recursive: true });
+    await fs.mkdir(out, { recursive: true });
     return out;
 }
 async function binPath(version) {
@@ -62,7 +60,7 @@ async function checkForVersion(version) {
     }
     const downloadPath = await getDownloadPath(version);
     const binPath = (0, path_1.join)(downloadPath, "near-sandbox");
-    if (await (0, utils_1.fileExists)(binPath)) {
+    if (await (0, binaryUtils_1.fileExists)(binPath)) {
         return binPath;
     }
     return undefined;

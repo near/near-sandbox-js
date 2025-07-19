@@ -1,5 +1,5 @@
 import { DirectoryResult } from "tmp-promise";
-import { fileExists, inherit } from "../utils";
+import { fileExists, inherit } from "./binaryUtils";
 import { ChildProcess, spawn } from "child_process";
 import { ensureBinWithVersion } from "./binary";
 import { join } from "path";

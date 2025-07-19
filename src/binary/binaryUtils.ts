@@ -1,5 +1,6 @@
 // import { Binary } from "./Binary";
 // import { join } from "path";
+import { stat, rm as RM } from "fs/promises";
 import * as os from "os";
 
 const DEFAULT_NEAR_SANDBOX_VERSION = "2.6.5";
@@ -21,6 +22,23 @@ function getPlatform() {
 export function AWSUrl(version: string = DEFAULT_NEAR_SANDBOX_VERSION): string {
   const [platform, arch] = getPlatform();
   return `https://s3-us-west-1.amazonaws.com/build.nearprotocol.com/nearcore/${platform}-${arch}/${version}/near-sandbox.tar.gz`;
+}
+
+export async function fileExists(filePath: string): Promise<boolean> {
+  try {
+    const f = await stat(filePath);
+    return f.isFile();
+  } catch {
+    return false;
+  }
+}
+
+export const inherit: "inherit" = "inherit";
+
+export async function rm(path: string): Promise<void> {
+  try {
+    await RM(path);
+  } catch (e) { }
 }
 
 // export function getBinary(name: string = "near-sandbox", version?: string): Promise<Binary> {
