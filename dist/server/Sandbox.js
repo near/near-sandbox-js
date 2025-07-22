@@ -6,6 +6,7 @@ const binaryExecution_1 = require("../binary/binaryExecution");
 const config_1 = require("./config");
 const sandboxUtils_1 = require("./sandboxUtils");
 const proper_lockfile_1 = require("proper-lockfile");
+const promises_1 = require("fs/promises");
 const DEFAULT_NEAR_SANDBOX_VERSION = "2.6.5";
 class Sandbox {
     constructor(rpcUrl, homeDir, childProcess, rpcPortLock, netPortLock) {
@@ -66,33 +67,54 @@ class Sandbox {
         const options = ["--home", homeDir.path, "run", "--rpc-addr", rpcAddr, "--network-addr", netAddr];
         // Run sandbox with the specified version and options get ChildProcess
         const childProcess = await (0, binaryExecution_1.runWithOptionsAndVersion)(version, options);
-        // Add delay to ensure the process is ready
-        // check rpcUrl
-        // return new Sandbox instance
         const rpcUrl = `http://${rpcAddr}`;
+        // Add delay to ensure the process is ready
+        await this.waitUntilReady(rpcUrl);
+        // return new Sandbox instance
         return new Sandbox(rpcUrl, homeDir, childProcess, rpcPortLock, netPortLock);
     }
-    async tearDown() {
+    async tearDown(cleanup = false) {
         try {
-            await (0, proper_lockfile_1.unlock)(this.rpcPortLock);
-            await (0, proper_lockfile_1.unlock)(this.netPortLock);
+            await Promise.all([
+                (0, proper_lockfile_1.unlock)(this.rpcPortLock),
+                (0, proper_lockfile_1.unlock)(this.netPortLock)
+            ]);
         }
         catch (error) {
             throw new Error("Failed to unlock ports: " + error);
         }
-        //TODO: add delay to ensure the process is killed before cleanup
-        if (this.childProcess) {
-            this.childProcess.kill();
+        const success = this.childProcess.kill();
+        if (!success) {
+            throw new Error("Failed to kill the child process");
         }
-        // Clean up the home directory
-        await this._homeDir.cleanup();
+        if (cleanup) {
+            await Promise.race([
+                new Promise(resolve => this.childProcess.once('exit', resolve))
+            ]);
+            await (0, promises_1.rm)(this.homeDir, { recursive: true, force: true }).catch(error => {
+                throw new Error(`Failed to remove sandbox home directory: ${error}`);
+            });
+        }
     }
     static async initHomeDirWithVersion(version) {
         const homeDir = await (0, tmp_promise_1.dir)({ unsafeCleanup: true });
-        // call initHomeDirWithVersion
         await (0, binaryExecution_1.initHomeDirWithVersion)(version, homeDir);
-        // return the home directory
         return homeDir;
+    }
+    static async waitUntilReady(rpcUrl) {
+        const timeoutSecs = parseInt(process.env["NEAR_RPC_TIMEOUT_SECS"] || '10');
+        const attempts = timeoutSecs * 2;
+        for (let i = 0; i < attempts; i++) {
+            try {
+                const response = await fetch(`${rpcUrl}/status`);
+                if (response.ok) {
+                    return;
+                }
+            }
+            catch { }
+            await new Promise(resolve => setTimeout(resolve, 500));
+        }
+        throw new Error('Timeout: RPC endpoint did not become ready in time.');
     }
 }
 exports.Sandbox = Sandbox;

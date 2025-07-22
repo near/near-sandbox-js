@@ -165,8 +165,6 @@ async function overwriteGenesis(
     throw new Error("Expected 'records' to be an array in genesis.json");
   }
 
-  console.log("Genesis records updated:", genesisObj['records']);
-
   for (const acc of accountsToAdd) {
     genesisObj['records'].push({
       Account: {
@@ -192,12 +190,9 @@ async function overwriteGenesis(
     });
   }
 
-  console.log("Genesis records with updated accs:", genesisObj['records']);
-
   if (config?.additionalGenesis) {
     apply(genesisObj, config?.additionalGenesis);
   }
-  console.log("Final genesis object:", genesisObj);
   await fs.writeFile(genesisPath, JSON.stringify(genesisObj), 'utf-8');
 }
 

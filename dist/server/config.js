@@ -139,7 +139,6 @@ async function overwriteGenesis(homeDir, config) {
     if (!Array.isArray(genesisObj['records'])) {
         throw new Error("Expected 'records' to be an array in genesis.json");
     }
-    console.log("Genesis records updated:", genesisObj['records']);
     for (const acc of accountsToAdd) {
         genesisObj['records'].push({
             Account: {
@@ -163,11 +162,9 @@ async function overwriteGenesis(homeDir, config) {
             }
         });
     }
-    console.log("Genesis records with updated accs:", genesisObj['records']);
     if (config === null || config === void 0 ? void 0 : config.additionalGenesis) {
         (0, json_merge_patch_1.apply)(genesisObj, config === null || config === void 0 ? void 0 : config.additionalGenesis);
     }
-    console.log("Final genesis object:", genesisObj);
     await fs.writeFile(genesisPath, JSON.stringify(genesisObj), 'utf-8');
 }
 async function saveAccountsKeys(homeDir, additionalAccountsWithDefault) {

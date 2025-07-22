@@ -29,7 +29,7 @@ async function tryAcquireSpecificPort(port) {
         await fs.writeFile(lockFilePath, '');
     }
     try {
-        await (0, proper_lockfile_1.lock)(lockFilePath, { retries: 0 });
+        await (0, proper_lockfile_1.lock)(lockFilePath);
         // Only return if lock was successful
         return { port, lockFilePath };
     }
@@ -44,7 +44,7 @@ async function acquireUnusedPort() {
         try {
             const port = await resolveAvailablePort({ port: 0, host: DEFAULT_RPC_HOST });
             const lockFilePath = await createLockFileForPort(port);
-            await (0, proper_lockfile_1.lock)(lockFilePath, { retries: 0 });
+            await (0, proper_lockfile_1.lock)(lockFilePath);
             return { port, lockFilePath };
         }
         catch (error) {

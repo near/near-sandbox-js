@@ -33,7 +33,7 @@ async function tryAcquireSpecificPort(port: number): Promise<{ port: number; loc
     }
 
     try {
-        await lock(lockFilePath, { retries: 0 });
+        await lock(lockFilePath);
         // Only return if lock was successful
         return { port, lockFilePath };
     } catch {
@@ -49,7 +49,7 @@ async function acquireUnusedPort(): Promise<{ port: number; lockFilePath: string
         try {
             const port = await resolveAvailablePort({ port: 0, host: DEFAULT_RPC_HOST });
             const lockFilePath = await createLockFileForPort(port);
-            await lock(lockFilePath, { retries: 0 });
+            await lock(lockFilePath);
             return { port, lockFilePath };
         } catch (error) {
             errors.push(error instanceof Error ? error.message : String(error));

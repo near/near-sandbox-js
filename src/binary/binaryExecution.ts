@@ -30,7 +30,7 @@ export async function initHomeDirWithVersion(version: string, homeDir: Directory
 
 export async function runWithOptionsAndVersion(
     version: string,
-    options: string[], //"--home" home_dir.path().to_str().expect("home_dir is valid utf8"),"run","--rpc-addr",&rpc_addr,"--network-addr",&net_addr,
+    options: string[], 
     // cliArgs?: string[],
     // options = { stdio: [null, inherit, inherit] }
 ): Promise<ChildProcess> {

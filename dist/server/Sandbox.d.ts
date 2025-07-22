@@ -12,6 +12,7 @@ export declare class Sandbox {
     get rpcUrl(): string;
     get homeDir(): string;
     static start(config?: SandboxConfig, version?: string): Promise<Sandbox>;
-    tearDown(): Promise<void>;
+    tearDown(cleanup?: boolean): Promise<void>;
     private static initHomeDirWithVersion;
+    private static waitUntilReady;
 }
