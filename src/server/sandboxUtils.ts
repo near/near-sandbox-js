@@ -9,7 +9,7 @@ import { lock } from 'proper-lockfile';
 const DEFAULT_RPC_HOST = '127.0.0.1';
 
 export function rpcSocket(port: number): string {
-    return `http://${DEFAULT_RPC_HOST}:${port}`;
+    return `${DEFAULT_RPC_HOST}:${port}`;
 }
 
 export async function acquireOrLockPort(port?: number): Promise<{ port: number; lockFilePath: string }> {

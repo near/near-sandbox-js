@@ -3,7 +3,7 @@ import * as net from 'net';
 import { existsSync } from "fs";
 import { writeFile } from 'fs/promises';
 import { Sandbox } from '../src/server/Sandbox';
-import { SandboxConfig } from '../src/server/interfaces';
+import { GenesisAccount, SandboxConfig } from '../src/server/config';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { lock } from 'proper-lockfile';
@@ -23,15 +23,13 @@ test('Sandbox.start() returns a valid instance with default config and version',
 test('Sandbox.start() accepts custom config and version', async (t) => {
     const customConfig: SandboxConfig = {
         rpcPort: 3030,
-        additionalGenesis: JSON.stringify({ epoch_length: 100 }),
-        additionalAccounts: [{
-            accountId: 'test.near',
-            publicKey: 'ed25519:ABCDEFGH1234567890',
-            privateKey: 'ed25519:ZYXWVUT9876543210',
-            balance: BigInt(1000000000000000000000000),
-        }],
+        additionalGenesis: { epoch_length: 100 },
+        additionalAccounts: [
+            GenesisAccount.random("alice.near", "1000"),
+        ],
+        maxOpenFiles: 100
     };
-    const sandbox = await Sandbox.start(customConfig, '2.6.0');
+    const sandbox = await Sandbox.start(customConfig, '2.6.5');
 
     t.truthy(sandbox);
 

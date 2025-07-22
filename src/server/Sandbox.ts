@@ -1,6 +1,6 @@
 import { dir, DirectoryResult } from "tmp-promise";
 import { initHomeDirWithVersion, runWithOptionsAndVersion } from "../binary/binaryExecution";
-import { SandboxConfig } from "./interfaces";
+import { SandboxConfig, setSandboxConfig, setSandboxGenesis } from "./config";
 import { ChildProcess } from "child_process";
 import { acquireOrLockPort, rpcSocket } from "./sandboxUtils";
 import { unlock } from "proper-lockfile";
@@ -42,15 +42,18 @@ export class Sandbox {
         const rpcAddr = rpcSocket(rpcPort);
         const netAddr = rpcSocket(netPort);
         // set sandbox configs
-        console.log(config)
+        await setSandboxGenesis(homeDir.path, config);
+        await setSandboxConfig(homeDir.path, config);
         // create options and args to spawn the process
-        const options = ["--home", homeDir.path, "run", "--rpc-addr", rpcAddr, "--net-addr", netAddr];
+        const options = ["--home", homeDir.path, "run", "--rpc-addr", rpcAddr, "--network-addr", netAddr];
         // Run sandbox with the specified version and options get ChildProcess
         const childProcess = await runWithOptionsAndVersion(version, options);
 
+        // Add delay to ensure the process is ready
         // check rpcUrl
         // return new Sandbox instance
-        return new Sandbox(rpcAddr, homeDir, childProcess, rpcPortLock, netPortLock);
+        const rpcUrl = `http://${rpcAddr}`;
+        return new Sandbox(rpcUrl, homeDir, childProcess, rpcPortLock, netPortLock);
     }
 
     async tearDown(): Promise<void> {
@@ -60,7 +63,7 @@ export class Sandbox {
         } catch (error) {
             throw new Error("Failed to unlock ports: " + error);
         }
-
+        //TODO: add delay to ensure the process is killed before cleanup
         if (this.childProcess) {
             this.childProcess.kill();
         }

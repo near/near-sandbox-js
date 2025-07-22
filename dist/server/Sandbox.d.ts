@@ -1,6 +1,6 @@
 /// <reference types="node" />
 import { DirectoryResult } from "tmp-promise";
-import { SandboxConfig } from "./interfaces";
+import { SandboxConfig } from "./config";
 import { ChildProcess } from "child_process";
 export declare class Sandbox {
     private _rpcUrl;

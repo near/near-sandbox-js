@@ -9,7 +9,7 @@ const os_1 = require("os");
 const proper_lockfile_1 = require("proper-lockfile");
 const DEFAULT_RPC_HOST = '127.0.0.1';
 function rpcSocket(port) {
-    return `http://${DEFAULT_RPC_HOST}:${port}`;
+    return `${DEFAULT_RPC_HOST}:${port}`;
 }
 exports.rpcSocket = rpcSocket;
 async function acquireOrLockPort(port) {
