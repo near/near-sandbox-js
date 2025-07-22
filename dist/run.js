@@ -1,15 +1,23 @@
 "use strict";
-// import { getBinary } from "./binary/binaryUtils";
-// async function run() {
-//   try {
-//     const bin = await getBinary();
-//     if (process.argv.length < 3) {
-//       process.argv.push("--help");
-//     }
-//     bin.runAndExit();
-//   } catch (err) {
-//     console.error(err);
-//     process.exit(1);
-//   }
-// }
-// run();
+Object.defineProperty(exports, "__esModule", { value: true });
+const binaryExecution_1 = require("./binary/binaryExecution");
+const Sandbox_1 = require("./server/Sandbox");
+async function run() {
+    try {
+        if (process.argv.length < 3) {
+            process.argv.push("--help");
+        }
+        const sandboxProcess = await (0, binaryExecution_1.runWithArgsAndVersion)(Sandbox_1.DEFAULT_NEAR_SANDBOX_VERSION, process.argv.slice(2), { stdio: [null, 'inherit', 'inherit'] });
+        sandboxProcess.on("exit", (code) => {
+            if (code !== 0) {
+                console.error(`Sandbox process exited with code ${code}`);
+            }
+        });
+    }
+    catch (error) {
+        console.log(error);
+        process.exit(1);
+    }
+}
+;
+run();

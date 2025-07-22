@@ -6,4 +6,4 @@ export {
     DEFAULT_PRIVATE_KEY,
     DEFAULT_BALANCE
 } from './server/config';
-export { Sandbox } from './server/Sandbox';
+export * from './server/Sandbox';

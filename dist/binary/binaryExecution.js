@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.runWithOptionsAndVersion = exports.initHomeDirWithVersion = void 0;
+exports.runWithArgsAndVersion = exports.initHomeDirWithVersion = void 0;
 const binaryUtils_1 = require("./binaryUtils");
 const child_process_1 = require("child_process");
 const binary_1 = require("./binary");
@@ -29,14 +29,8 @@ async function initHomeDirWithVersion(version, homeDir) {
     }
 }
 exports.initHomeDirWithVersion = initHomeDirWithVersion;
-async function runWithOptionsAndVersion(version, options) {
+async function runWithArgsAndVersion(version, args, options = { stdio: [null, null, 'inherit'] }) {
     const binPath = await (0, binary_1.ensureBinWithVersion)(version);
-    return (0, child_process_1.spawn)(binPath, options, { stdio: [null, binaryUtils_1.inherit, binaryUtils_1.inherit] });
+    return (0, child_process_1.spawn)(binPath, args, options);
 }
-exports.runWithOptionsAndVersion = runWithOptionsAndVersion;
-// export async function runAndExit(
-//     cliArgs?: string[],
-//     options = { stdio: [null, inherit, inherit] }
-// ): Promise<void> {
-//     process.exit(await this.run(cliArgs, options));
-// }
+exports.runWithArgsAndVersion = runWithArgsAndVersion;

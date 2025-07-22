@@ -37,8 +37,6 @@
     "typescript": "5.4.5"
   },
   "scripts": {
-    "postinstall": "node ./install.js",
-    "preinstall": "node ./uninstall.js",
     "test": "ava",
     "build": "tsc",
     "changeset": "changeset",

@@ -1,6 +1,6 @@
 import { DirectoryResult } from "tmp-promise";
 import { fileExists, inherit } from "./binaryUtils";
-import { ChildProcess, spawn } from "child_process";
+import { ChildProcess, spawn, SpawnOptions } from "child_process";
 import { ensureBinWithVersion } from "./binary";
 import { join } from "path";
 
@@ -28,24 +28,15 @@ export async function initHomeDirWithVersion(version: string, homeDir: Directory
     }
 }
 
-export async function runWithOptionsAndVersion(
+export async function runWithArgsAndVersion(
     version: string,
-    options: string[], 
-    // cliArgs?: string[],
-    // options = { stdio: [null, inherit, inherit] }
+    args: string[], 
+    options: SpawnOptions = { stdio: [null, null, 'inherit'] }
 ): Promise<ChildProcess> {
     const binPath = await ensureBinWithVersion(version);
     return spawn(
         binPath,
-        options,
-        { stdio: [null, inherit, inherit] }
+        args,
+        options 
     );
 }
-
-// export async function runAndExit(
-//     cliArgs?: string[],
-//     options = { stdio: [null, inherit, inherit] }
-// ): Promise<void> {
-//     process.exit(await this.run(cliArgs, options));
-// }
-

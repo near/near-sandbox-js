@@ -1,13 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Sandbox = void 0;
+exports.Sandbox = exports.DEFAULT_NEAR_SANDBOX_VERSION = void 0;
 const tmp_promise_1 = require("tmp-promise");
 const binaryExecution_1 = require("../binary/binaryExecution");
 const config_1 = require("./config");
 const sandboxUtils_1 = require("./sandboxUtils");
 const proper_lockfile_1 = require("proper-lockfile");
 const promises_1 = require("fs/promises");
-const DEFAULT_NEAR_SANDBOX_VERSION = "2.6.5";
+exports.DEFAULT_NEAR_SANDBOX_VERSION = "2.6.5";
 class Sandbox {
     constructor(rpcUrl, homeDir, childProcess, rpcPortLock, netPortLock) {
         Object.defineProperty(this, "_rpcUrl", {
@@ -52,7 +52,7 @@ class Sandbox {
     get homeDir() {
         return this._homeDir.path;
     }
-    static async start(config, version = DEFAULT_NEAR_SANDBOX_VERSION) {
+    static async start(config, version = exports.DEFAULT_NEAR_SANDBOX_VERSION) {
         // Initialize home directory with the specified version get home directory
         const homeDir = await this.initHomeDirWithVersion(version);
         // get ports
@@ -66,7 +66,7 @@ class Sandbox {
         // create options and args to spawn the process
         const options = ["--home", homeDir.path, "run", "--rpc-addr", rpcAddr, "--network-addr", netAddr];
         // Run sandbox with the specified version and options get ChildProcess
-        const childProcess = await (0, binaryExecution_1.runWithOptionsAndVersion)(version, options);
+        const childProcess = await (0, binaryExecution_1.runWithArgsAndVersion)(version, options);
         const rpcUrl = `http://${rpcAddr}`;
         // Add delay to ensure the process is ready
         await this.waitUntilReady(rpcUrl);

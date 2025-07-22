@@ -1,16 +1,22 @@
-// import { getBinary } from "./binary/binaryUtils";
+import { runWithArgsAndVersion } from "./binary/binaryExecution";
+import { DEFAULT_NEAR_SANDBOX_VERSION } from "./server/Sandbox";
 
-// async function run() {
-//   try {
-//     const bin = await getBinary();
-//     if (process.argv.length < 3) {
-//       process.argv.push("--help");
-//     }
-//     bin.runAndExit();
-//   } catch (err) {
-//     console.error(err);
-//     process.exit(1);
-//   }
-// }
+async function run() {
+    try {
+        if (process.argv.length < 3) {
+            process.argv.push("--help");
+        }
+        const sandboxProcess = await runWithArgsAndVersion(DEFAULT_NEAR_SANDBOX_VERSION, process.argv.slice(2), { stdio: [null, 'inherit', 'inherit'] });
 
-// run();
+        sandboxProcess.on("exit", (code) => {
+            if (code !== 0) {
+                console.error(`Sandbox process exited with code ${code}`);
+            }
+        });
+    } catch (error) {
+        console.log(error);
+        process.exit(1);
+    }
+};
+
+run();
