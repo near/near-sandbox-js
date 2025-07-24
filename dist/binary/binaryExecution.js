@@ -8,7 +8,7 @@ const path_1 = require("path");
 // initializes a sandbox with provided version and home directory
 async function initHomeDirWithVersion(version, homeDir) {
     const bin = await (0, binary_1.ensureBinWithVersion)(version);
-    const result = (0, child_process_1.spawn)(bin, ["--home", homeDir.path, "init", "--fast"], { stdio: [null, binaryUtils_1.inherit, binaryUtils_1.inherit] });
+    const result = (0, child_process_1.spawn)(bin, ["--home", homeDir.path, "init", "--fast"], { stdio: [null, null, binaryUtils_1.inherit] });
     await new Promise((resolve, reject) => {
         result.on("close", (code) => {
             if (code === 0)

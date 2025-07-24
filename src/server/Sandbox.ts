@@ -8,6 +8,11 @@ import { rm } from "fs/promises";
 
 export const DEFAULT_NEAR_SANDBOX_VERSION = "2.6.5";
 
+interface StartParams {
+    config?: SandboxConfig;
+    version?: string;
+}
+
 export class Sandbox {
     private _rpcUrl: string;
     private _homeDir: DirectoryResult;
@@ -38,8 +43,9 @@ export class Sandbox {
     get netPortLockPath(): string {
         return this._netPortLockPath;
     }
-
-    static async start(config?: SandboxConfig, version: string = DEFAULT_NEAR_SANDBOX_VERSION): Promise<Sandbox> {
+    static async start(params: StartParams): Promise<Sandbox> {
+        const config: SandboxConfig = params.config || {};
+        const version: string = params.version || DEFAULT_NEAR_SANDBOX_VERSION;
         // Initialize home directory with the specified version get home directory
         const homeDir = await this.initHomeDirWithVersion(version);
         // get ports
@@ -100,15 +106,22 @@ export class Sandbox {
     private static async waitUntilReady(rpcUrl: string) {
         const timeoutSecs = parseInt(process.env["NEAR_RPC_TIMEOUT_SECS"] || '10');
         const attempts = timeoutSecs * 2;
+        let lastError: unknown = null;
         for (let i = 0; i < attempts; i++) {
             try {
                 const response = await fetch(`${rpcUrl}/status`);
                 if (response.ok) {
                     return;
                 }
-            } catch { }
+            } catch (error) {
+                lastError = error;
+            }
             await new Promise(resolve => setTimeout(resolve, 500));
         }
-        throw new Error('Timeout: RPC endpoint did not become ready in time.');
+        if (lastError) {
+            throw lastError;
+        } else {
+            throw new Error("Sandbox failed to become ready within the timeout period.");
+        }
     }
 }

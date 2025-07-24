@@ -3,7 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ensureBinWithVersion = exports.installable = exports.checkForVersion = exports.binPath = exports.dowloadBin = void 0;
 const binaryUtils_1 = require("./binaryUtils");
 const path_1 = require("path");
-const os = require("os");
 const util_1 = require("util");
 const stream = require("stream");
 const tar = require("tar");
@@ -11,6 +10,7 @@ const got_1 = require("got");
 const fs_1 = require("fs");
 const proper_lockfile_1 = require("proper-lockfile");
 const fs = require("fs/promises");
+const child_process_1 = require("child_process");
 const pipeline = (0, util_1.promisify)(stream.pipeline);
 // downloads the binary from AWS and extracts it to the specified directory
 async function dowloadBin(version) {
@@ -34,12 +34,15 @@ async function dowloadBin(version) {
     return binPath;
 }
 exports.dowloadBin = dowloadBin;
-// Returns a path to the binary in the form of: `{home}/.near/near-sandbox-{version}` || `{$OUT_DIR}/.near/near-sandbox-{version}`
+// Returns a path to the directory where the binary will be downloaded
+// If the arg DIR_TO_DOWNLOAD_BINARY is not undefined directory will be created in the specified path
+// otherwise it will be created in the bin directory of the project
 async function getDownloadPath(version) {
     var _a;
-    const out = (_a = process.env["OUT_DIR"]) !== null && _a !== void 0 ? _a : (0, path_1.join)(os.homedir(), ".near", `near-sandbox-${version}`);
-    await fs.mkdir(out, { recursive: true });
-    return out;
+    const baseDir = (_a = process.env["DIR_TO_DOWNLOAD_BINARY"]) !== null && _a !== void 0 ? _a : (0, path_1.join)(__dirname, "..", "..", "bin");
+    const dirToDownloadBin = (0, path_1.join)(baseDir, `near-sandbox-${version}`);
+    await fs.mkdir(dirToDownloadBin, { recursive: true });
+    return dirToDownloadBin;
 }
 async function binPath(version) {
     const pathFromEnv = process.env["NEAR_SANDBOX_BIN_PATH"];
@@ -96,6 +99,27 @@ async function installable(binPath) {
     return release;
 }
 exports.installable = installable;
+async function pingBin(binPath) {
+    return new Promise((resolve, reject) => {
+        const proc = (0, child_process_1.spawn)(binPath, ["--version"]);
+        let errorOutput = "";
+        proc.stderr.on("data", chunk => errorOutput += chunk.toString());
+        proc.on("error", err => {
+            reject(new Error(`Failed to execute binary: ${err.message}`));
+        });
+        proc.on("exit", (code, signal) => {
+            if (code === 0) {
+                resolve();
+            }
+            else if (signal) {
+                reject(new Error(`Binary was terminated by signal: ${signal}`));
+            }
+            else {
+                reject(new Error(`Binary exited with code ${code}. Stderr: ${errorOutput}`));
+            }
+        });
+    });
+}
 async function ensureBinWithVersion(version) {
     let _binPath = await binPath(version);
     const release = await installable(_binPath);
@@ -103,6 +127,14 @@ async function ensureBinWithVersion(version) {
         _binPath = await dowloadBin(version);
         process.env["NEAR_SANDBOX_BIN_PATH"] = _binPath;
         await release();
+    }
+    try {
+        await pingBin(_binPath);
+    }
+    catch (error) {
+        await fs.rm((0, path_1.join)(__dirname, "..", "..", "bin", `near-sandbox-${version}`), { recursive: true, force: true });
+        throw new Error(`Binary doesn't respond, probably is corrupted.\n` +
+            `Try re-downloading`);
     }
     return _binPath;
 }

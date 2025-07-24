@@ -8,7 +8,7 @@ import { join } from "path";
 export async function initHomeDirWithVersion(version: string, homeDir: DirectoryResult): Promise<void> {
     const bin = await ensureBinWithVersion(version);
 
-    const result = spawn(bin, ["--home", homeDir.path, "init", "--fast"], { stdio: [null, inherit, inherit] });
+    const result = spawn(bin, ["--home", homeDir.path, "init", "--fast"], { stdio: [null, null, inherit] });
     await new Promise<void>((resolve, reject) => {
         result.on("close", (code) => {
             if (code === 0) resolve();

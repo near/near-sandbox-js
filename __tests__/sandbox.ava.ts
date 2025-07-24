@@ -9,7 +9,7 @@ import { join } from 'path';
 import { lock } from 'proper-lockfile';
 
 test('Sandbox.start() returns a valid instance with default config and version', async (t) => {
-    const sandbox = await Sandbox.start();
+    const sandbox = await Sandbox.start({});
     t.truthy(sandbox);
     t.truthy(sandbox.rpcUrl);
     t.truthy(sandbox.homeDir);
@@ -28,7 +28,7 @@ test('Sandbox.start() accepts custom config and version', async (t) => {
         ],
         maxOpenFiles: 100
     };
-    const sandbox = await Sandbox.start(customConfig, '2.6.5');
+    const sandbox = await Sandbox.start({ config: customConfig, version: '2.6.5' });
 
     t.truthy(sandbox);
 
@@ -44,7 +44,7 @@ test('Sandbox throws if provided version is unsupported', async (t) => {
 });
 
 test('Sandbox.tearDown() cleans up resources', async t => {
-    const sandbox = await Sandbox.start();
+    const sandbox = await Sandbox.start({});
 
     const dirExistsBefore = existsSync(sandbox.homeDir);
     t.true(dirExistsBefore);
@@ -59,7 +59,7 @@ test('Sandbox.tearDown() cleans up resources', async t => {
 
 test('Sandbox uses provided rpcPort and returns correct rpcUrl', async (t) => {
     const rpcPort = 3040;
-    const sandbox = await Sandbox.start({ rpcPort });
+    const sandbox = await Sandbox.start({ config: { rpcPort } });
 
     t.is(sandbox.rpcUrl, `http://127.0.0.1:${rpcPort}`);
 
@@ -73,7 +73,7 @@ test('Sandbox throws if provided rpcPort is already in use', async (t) => {
 
     try {
         await t.throwsAsync(
-            () => Sandbox.start({ rpcPort }),
+            () => Sandbox.start({ config: { rpcPort } }),
             {
                 message: /EADDRINUSE/,
             }
@@ -92,7 +92,7 @@ test('Sandbox fails to start if rpcPort lock is held by another process', async 
 
     try {
         await t.throwsAsync(() =>
-            Sandbox.start({ rpcPort })
+            Sandbox.start({ config: { rpcPort } })
             , {
                 message: /Failed to lock port/,
             });

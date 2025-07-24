@@ -22,13 +22,13 @@ class Sandbox {
             writable: true,
             value: void 0
         });
-        Object.defineProperty(this, "rpcPortLock", {
+        Object.defineProperty(this, "_rpcPortLockPath", {
             enumerable: true,
             configurable: true,
             writable: true,
             value: void 0
         });
-        Object.defineProperty(this, "netPortLock", {
+        Object.defineProperty(this, "_netPortLockPath", {
             enumerable: true,
             configurable: true,
             writable: true,
@@ -42,9 +42,9 @@ class Sandbox {
         });
         this._rpcUrl = rpcUrl;
         this._homeDir = homeDir;
+        this._rpcPortLockPath = rpcPortLock;
+        this._netPortLockPath = netPortLock;
         this.childProcess = childProcess;
-        this.rpcPortLock = rpcPortLock;
-        this.netPortLock = netPortLock;
     }
     get rpcUrl() {
         return this._rpcUrl;
@@ -52,7 +52,15 @@ class Sandbox {
     get homeDir() {
         return this._homeDir.path;
     }
-    static async start(config, version = exports.DEFAULT_NEAR_SANDBOX_VERSION) {
+    get rpcPortLockPath() {
+        return this._rpcPortLockPath;
+    }
+    get netPortLockPath() {
+        return this._netPortLockPath;
+    }
+    static async start(params) {
+        const config = params.config || {};
+        const version = params.version || exports.DEFAULT_NEAR_SANDBOX_VERSION;
         // Initialize home directory with the specified version get home directory
         const homeDir = await this.initHomeDirWithVersion(version);
         // get ports
@@ -65,7 +73,7 @@ class Sandbox {
         await (0, config_1.setSandboxConfig)(homeDir.path, config);
         // create options and args to spawn the process
         const options = ["--home", homeDir.path, "run", "--rpc-addr", rpcAddr, "--network-addr", netAddr];
-        // Run sandbox with the specified version and options get ChildProcess
+        // Run sandbox with the specified version and arguments, get ChildProcess
         const childProcess = await (0, binaryExecution_1.runWithArgsAndVersion)(version, options);
         const rpcUrl = `http://${rpcAddr}`;
         // Add delay to ensure the process is ready
@@ -76,8 +84,8 @@ class Sandbox {
     async tearDown(cleanup = false) {
         try {
             await Promise.all([
-                (0, proper_lockfile_1.unlock)(this.rpcPortLock),
-                (0, proper_lockfile_1.unlock)(this.netPortLock)
+                (0, proper_lockfile_1.unlock)(this.rpcPortLockPath),
+                (0, proper_lockfile_1.unlock)(this.netPortLockPath)
             ]);
         }
         catch (error) {
@@ -104,6 +112,7 @@ class Sandbox {
     static async waitUntilReady(rpcUrl) {
         const timeoutSecs = parseInt(process.env["NEAR_RPC_TIMEOUT_SECS"] || '10');
         const attempts = timeoutSecs * 2;
+        let lastError = null;
         for (let i = 0; i < attempts; i++) {
             try {
                 const response = await fetch(`${rpcUrl}/status`);
@@ -111,10 +120,17 @@ class Sandbox {
                     return;
                 }
             }
-            catch { }
+            catch (error) {
+                lastError = error;
+            }
             await new Promise(resolve => setTimeout(resolve, 500));
         }
-        throw new Error('Timeout: RPC endpoint did not become ready in time.');
+        if (lastError) {
+            throw lastError;
+        }
+        else {
+            throw new Error("Sandbox failed to become ready within the timeout period.");
+        }
     }
 }
 exports.Sandbox = Sandbox;
