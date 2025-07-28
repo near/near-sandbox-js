@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ensureBinWithVersion = exports.installable = exports.checkForVersion = exports.binPath = exports.dowloadBin = void 0;
+exports.ensureBinWithVersion = exports.installable = exports.checkForVersion = exports.binPath = exports.downloadBin = void 0;
 const binaryUtils_1 = require("./binaryUtils");
 const path_1 = require("path");
 const util_1 = require("util");
@@ -11,9 +11,9 @@ const fs_1 = require("fs");
 const proper_lockfile_1 = require("proper-lockfile");
 const fs = require("fs/promises");
 const child_process_1 = require("child_process");
+const errors_1 = require("../errors");
 const pipeline = (0, util_1.promisify)(stream.pipeline);
-// downloads the binary from AWS and extracts it to the specified directory
-async function dowloadBin(version) {
+async function downloadBin(version) {
     const existingFile = await checkForVersion(version);
     if (existingFile) {
         return existingFile;
@@ -26,14 +26,16 @@ async function dowloadBin(version) {
     else {
         url = (0, binaryUtils_1.AWSUrl)(version);
     }
-    if (!url) {
-        throw new Error("No URL provided got empty array");
+    try {
+        await pipeline(got_1.default.stream(url), new stream.PassThrough(), tar.x({ strip: 1, C: await getDownloadPath(version) }));
     }
-    await pipeline(got_1.default.stream(url), new stream.PassThrough(), tar.x({ strip: 1, C: await getDownloadPath(version) }));
+    catch (error) {
+        throw new errors_1.TypedError(`Failed to download binary. Check Url and version`, errors_1.BinaryErrors.DownloadFailed, error instanceof Error ? error : new Error(String(error)));
+    }
     const binPath = (0, path_1.join)(await getDownloadPath(version), "near-sandbox");
     return binPath;
 }
-exports.dowloadBin = dowloadBin;
+exports.downloadBin = downloadBin;
 // Returns a path to the directory where the binary will be downloaded
 // If the arg DIR_TO_DOWNLOAD_BINARY is not undefined directory will be created in the specified path
 // otherwise it will be created in the bin directory of the project
@@ -48,7 +50,7 @@ async function binPath(version) {
     const pathFromEnv = process.env["NEAR_SANDBOX_BIN_PATH"];
     if (pathFromEnv) {
         if (!((0, fs_1.existsSync)(pathFromEnv))) {
-            throw new Error(`NEAR_SANDBOX_BIN_PATH ${pathFromEnv} does not exist.`);
+            throw new errors_1.TypedError(`NEAR_SANDBOX_BIN_PATH does not exist.`, errors_1.BinaryErrors.BinaryNotFound, new Error(`${pathFromEnv} does not exist`));
         }
         return pathFromEnv;
     }
@@ -90,7 +92,7 @@ async function installable(binPath) {
         });
     }
     catch (error) {
-        throw new Error(`Failed to acquire lock for ${lockPath}: ${error}`);
+        throw new errors_1.TypedError(`Failed to acquire lock for downloading the binary.`, errors_1.TcpAndLockErrors.LockFailed, error instanceof Error ? error : new Error(String(error)));
     }
     if ((0, fs_1.existsSync)(binPath)) {
         await release();
@@ -105,7 +107,7 @@ async function pingBin(binPath) {
         let errorOutput = "";
         proc.stderr.on("data", chunk => errorOutput += chunk.toString());
         proc.on("error", err => {
-            reject(new Error(`Failed to execute binary: ${err.message}`));
+            reject(err);
         });
         proc.on("exit", (code, signal) => {
             if (code === 0) {
@@ -124,7 +126,7 @@ async function ensureBinWithVersion(version) {
     let _binPath = await binPath(version);
     const release = await installable(_binPath);
     if (release) {
-        _binPath = await dowloadBin(version);
+        _binPath = await downloadBin(version);
         process.env["NEAR_SANDBOX_BIN_PATH"] = _binPath;
         await release();
     }
@@ -133,8 +135,7 @@ async function ensureBinWithVersion(version) {
     }
     catch (error) {
         await fs.rm((0, path_1.join)(__dirname, "..", "..", "bin", `near-sandbox-${version}`), { recursive: true, force: true });
-        throw new Error(`Binary doesn't respond, probably is corrupted.\n` +
-            `Try re-downloading`);
+        throw new errors_1.TypedError(`Binary doesn't respond, probably is corrupted. Try re-downloading`, errors_1.BinaryErrors.RunningFailed, error instanceof Error ? error : new Error(String(error)));
     }
     return _binPath;
 }

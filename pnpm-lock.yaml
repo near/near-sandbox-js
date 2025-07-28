@@ -10,10 +10,10 @@ importers:
     dependencies:
       '@near-js/crypto':
         specifier: ^2.2.2
-        version: 2.2.3(@near-js/types@2.2.3)(@near-js/utils@2.2.3(@near-js/types@2.2.3))
+        version: 2.2.4(@near-js/types@2.2.4)(@near-js/utils@2.2.4(@near-js/types@2.2.4))
       '@near-js/tokens':
         specifier: ^2.2.2
-        version: 2.2.3
+        version: 2.2.4
       get-port:
         specifier: ^7.1.0
         version: 7.1.0
@@ -238,20 +238,20 @@ packages:
   '@manypkg/get-packages@1.1.3':
     resolution: {integrity: sha512-fo+QhuU3qE/2TQMQmbVMqaQ6EWbMhi4ABWP+O4AM1NqPBuy0OrApV5LO6BrrgnhtAHS2NH6RrVk9OL181tTi8A==}
 
-  '@near-js/crypto@2.2.3':
-    resolution: {integrity: sha512-fL8w5HbrvlgFO6aZuGqGjoU5OCQlOCCLiYwxBzUUOv+P462fauPHzX12GgxY8IX9DXRCu2Eq9jNu5TnoUPjR8Q==}
+  '@near-js/crypto@2.2.4':
+    resolution: {integrity: sha512-zPU0tim4/mZb3Q/EoRYZx4rDDLpv/bFndk1o/QGVj/VtAmmIVbjFVlkHFo/RvNy7SWddFufgYJbunLlmjLT7+g==}
     peerDependencies:
       '@near-js/types': ^2.0.1
       '@near-js/utils': ^2.0.1
 
-  '@near-js/tokens@2.2.3':
-    resolution: {integrity: sha512-/1dGHYfgBNOoELv+VOkoEyLRl+Ap3maxWPj8TJCWEdzIsM1xBmYXlvVpxg2Utkjv1u77wzdJoglVz8S5CA5fwA==}
+  '@near-js/tokens@2.2.4':
+    resolution: {integrity: sha512-I8P9PDwVePiGkOmj+QBgTm98dBEXJHUJtN/wMieGEsjf7CnbDnaXgaKA6oNwAEFbR24DFvtOrVFk/GH4zrkiWw==}
 
-  '@near-js/types@2.2.3':
-    resolution: {integrity: sha512-8VFhTsTKs47WQF1NNZASsoTZJvZulW98SYyfUE5LEM8PoLFsvvPnyyKcOppzeIPrwr+68t0rK0Dl+ANEHCFlbw==}
+  '@near-js/types@2.2.4':
+    resolution: {integrity: sha512-ntiXbDfdT82JX2a6hteThr9gd7z1T9quzJXSqCUqA3ME/4oujkRLyvIBM77KBgH3+lrphJqi1i8B1Ns2Ft5MkQ==}
 
-  '@near-js/utils@2.2.3':
-    resolution: {integrity: sha512-Ac966+QzuRdiKUKYgQG/AmMIc3WPH/MTnRK/TpUoz1kEVXu+bePkenezCvLcfOqYg9NEr1i84w971XG+muNZpw==}
+  '@near-js/utils@2.2.4':
+    resolution: {integrity: sha512-X30TyM9+E0GgUyc4Q80xzadnTmQZMlmh8TeM4NuFee9DSWnJtqoM87EkyHtfDIhNYS4CMawa2poDDldmWvHb9A==}
     peerDependencies:
       '@near-js/types': ^2.0.1
 
@@ -2821,22 +2821,22 @@ snapshots:
       globby: 11.1.0
       read-yaml-file: 1.1.0
 
-  '@near-js/crypto@2.2.3(@near-js/types@2.2.3)(@near-js/utils@2.2.3(@near-js/types@2.2.3))':
+  '@near-js/crypto@2.2.4(@near-js/types@2.2.4)(@near-js/utils@2.2.4(@near-js/types@2.2.4))':
     dependencies:
-      '@near-js/types': 2.2.3
-      '@near-js/utils': 2.2.3(@near-js/types@2.2.3)
+      '@near-js/types': 2.2.4
+      '@near-js/utils': 2.2.4(@near-js/types@2.2.4)
       '@noble/curves': 1.8.1
       borsh: 1.0.0
       randombytes: 2.1.0
       secp256k1: 5.0.1
 
-  '@near-js/tokens@2.2.3': {}
+  '@near-js/tokens@2.2.4': {}
 
-  '@near-js/types@2.2.3': {}
+  '@near-js/types@2.2.4': {}
 
-  '@near-js/utils@2.2.3(@near-js/types@2.2.3)':
+  '@near-js/utils@2.2.4(@near-js/types@2.2.4)':
     dependencies:
-      '@near-js/types': 2.2.3
+      '@near-js/types': 2.2.4
       '@scure/base': 1.2.6
       depd: 2.0.0
       mustache: 4.0.0

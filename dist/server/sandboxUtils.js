@@ -7,6 +7,7 @@ const net = require("net");
 const path_1 = require("path");
 const os_1 = require("os");
 const proper_lockfile_1 = require("proper-lockfile");
+const errors_1 = require("../errors");
 const DEFAULT_RPC_HOST = '127.0.0.1';
 function rpcSocket(port) {
     return `${DEFAULT_RPC_HOST}:${port}`;
@@ -20,21 +21,16 @@ async function acquireOrLockPort(port) {
 exports.acquireOrLockPort = acquireOrLockPort;
 async function tryAcquireSpecificPort(port) {
     const checkedPort = await resolveAvailablePort({ port, host: DEFAULT_RPC_HOST });
-    // If the port is not available, throw an error
     if (checkedPort !== port) {
-        throw new Error(`Port ${port} is not available`);
+        throw new errors_1.TypedError(`Port ${port} is not available`, errors_1.TcpAndLockErrors.PortNotAvailable);
     }
-    const lockFilePath = (0, path_1.join)((0, os_1.tmpdir)(), `near-sandbox-port-${port}.lock`);
-    if (!(0, fs_1.existsSync)(lockFilePath)) {
-        await fs.writeFile(lockFilePath, '');
-    }
+    const lockFilePath = await createLockFileForPort(port);
     try {
         await (0, proper_lockfile_1.lock)(lockFilePath);
-        // Only return if lock was successful
         return { port, lockFilePath };
     }
     catch {
-        throw new Error(`Failed to lock port ${port}. It may already be in use.`);
+        throw new errors_1.TypedError(`Failed to lock port ${port}. It may already be in use.`, errors_1.TcpAndLockErrors.LockFailed);
     }
 }
 async function acquireUnusedPort() {
@@ -51,8 +47,7 @@ async function acquireUnusedPort() {
             errors.push(error instanceof Error ? error.message : String(error));
         }
     }
-    throw new Error(`Failed to acquire an unused port after ${MAX_ATTEMPTS} attempts:\n` +
-        errors.map((msg, i) => `Attempt ${i + 1}: ${msg}`).join("\n"));
+    throw new errors_1.TypedError(`Failed to acquire an unused port after ${MAX_ATTEMPTS} attempts`, errors_1.TcpAndLockErrors.PortAcquisitionFailed, new Error(errors.map((msg, i) => `Attempt ${i + 1}: ${msg}`).join("\n")));
 }
 // options takes the port and host, if port is 0 os will find an available port
 async function resolveAvailablePort(options) {
@@ -68,7 +63,7 @@ async function resolveAvailablePort(options) {
             }
             else {
                 server.close();
-                reject(new Error('Could not determine assigned port.'));
+                reject(new errors_1.TypedError('Could not determine assigned port.', errors_1.TcpAndLockErrors.PortAcquisitionFailed));
             }
         });
     });

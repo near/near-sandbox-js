@@ -4,6 +4,7 @@ import * as net from "net";
 import { join } from "path";
 import { tmpdir } from "os";
 import { lock } from 'proper-lockfile';
+import { TcpAndLockErrors, TypedError } from "../errors";
 
 
 const DEFAULT_RPC_HOST = '127.0.0.1';
@@ -21,23 +22,17 @@ export async function acquireOrLockPort(port?: number): Promise<{ port: number; 
 async function tryAcquireSpecificPort(port: number): Promise<{ port: number; lockFilePath: string }> {
     const checkedPort = await resolveAvailablePort({ port, host: DEFAULT_RPC_HOST });
 
-    // If the port is not available, throw an error
     if (checkedPort !== port) {
-        throw new Error(`Port ${port} is not available`);
+        throw new TypedError(`Port ${port} is not available`, TcpAndLockErrors.PortNotAvailable);
     }
 
-    const lockFilePath = join(tmpdir(), `near-sandbox-port-${port}.lock`);
-
-    if (!existsSync(lockFilePath)) {
-        await fs.writeFile(lockFilePath, '');
-    }
+    const lockFilePath = await createLockFileForPort(port);
 
     try {
         await lock(lockFilePath);
-        // Only return if lock was successful
         return { port, lockFilePath };
     } catch {
-        throw new Error(`Failed to lock port ${port}. It may already be in use.`);
+        throw new TypedError(`Failed to lock port ${port}. It may already be in use.`, TcpAndLockErrors.LockFailed);
     }
 }
 
@@ -55,9 +50,10 @@ async function acquireUnusedPort(): Promise<{ port: number; lockFilePath: string
             errors.push(error instanceof Error ? error.message : String(error));
         }
     }
-    throw new Error(
-        `Failed to acquire an unused port after ${MAX_ATTEMPTS} attempts:\n` +
-        errors.map((msg, i) => `Attempt ${i + 1}: ${msg}`).join("\n")
+    throw new TypedError(
+        `Failed to acquire an unused port after ${MAX_ATTEMPTS} attempts`,
+        TcpAndLockErrors.PortAcquisitionFailed,
+        new Error(errors.map((msg, i) => `Attempt ${i + 1}: ${msg}`).join("\n"))
     );
 }
 
@@ -76,7 +72,7 @@ async function resolveAvailablePort(options: net.ListenOptions): Promise<number>
                 server.close(() => resolve(port));
             } else {
                 server.close();
-                reject(new Error('Could not determine assigned port.'));
+                reject(new TypedError('Could not determine assigned port.', TcpAndLockErrors.PortAcquisitionFailed));
             }
         });
     });

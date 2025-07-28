@@ -20,7 +20,7 @@ export declare class Sandbox {
     get netPortLockPath(): string;
     static start(params: StartParams): Promise<Sandbox>;
     tearDown(cleanup?: boolean): Promise<void>;
-    private static initHomeDirWithVersion;
+    private static initConfigsWithVersion;
     private static waitUntilReady;
 }
 export {};

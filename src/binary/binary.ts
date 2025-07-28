@@ -8,11 +8,11 @@ import { existsSync } from "fs";
 import { lock } from "proper-lockfile";
 import * as fs from "fs/promises";
 import { spawn } from "child_process";
+import { BinaryErrors, TcpAndLockErrors, TypedError } from "../errors";
 
 const pipeline = promisify(stream.pipeline);
 
-// downloads the binary from AWS and extracts it to the specified directory
-export async function dowloadBin(version: string): Promise<string> {
+export async function downloadBin(version: string): Promise<string> {
     const existingFile = await checkForVersion(version);
     if (existingFile) {
         return existingFile;
@@ -24,15 +24,19 @@ export async function dowloadBin(version: string): Promise<string> {
     } else {
         url = AWSUrl(version);
     }
-    if (!url) {
-        throw new Error("No URL provided got empty array");
-    }
 
-    await pipeline(
-        got.stream(url),
-        new stream.PassThrough(),
-        tar.x({ strip: 1, C: await getDownloadPath(version) })
-    );
+    try {
+        await pipeline(
+            got.stream(url),
+            new stream.PassThrough(),
+            tar.x({ strip: 1, C: await getDownloadPath(version) })
+        );
+
+    } catch (error) {
+        throw new TypedError(`Failed to download binary. Check Url and version`,
+            BinaryErrors.DownloadFailed,
+            error instanceof Error ? error : new Error(String(error)));
+    }
 
     const binPath = join(await getDownloadPath(version), "near-sandbox");
     return binPath;
@@ -55,7 +59,10 @@ export async function binPath(version: string): Promise<string> {
 
     if (pathFromEnv) {
         if (!(existsSync(pathFromEnv))) {
-            throw new Error(`NEAR_SANDBOX_BIN_PATH ${pathFromEnv} does not exist.`);
+            throw new TypedError(`NEAR_SANDBOX_BIN_PATH does not exist.`,
+                BinaryErrors.BinaryNotFound,
+                new Error(`${pathFromEnv} does not exist`)
+            );
         }
         return pathFromEnv;
     }
@@ -103,7 +110,10 @@ export async function installable(binPath: string): Promise<(() => Promise<void>
             },
         });
     } catch (error) {
-        throw new Error(`Failed to acquire lock for ${lockPath}: ${error}`);
+        throw new TypedError(`Failed to acquire lock for downloading the binary.`,
+            TcpAndLockErrors.LockFailed,
+            error instanceof Error ? error : new Error(String(error))
+        );
     }
 
     if (existsSync(binPath)) {
@@ -122,7 +132,7 @@ async function pingBin(binPath: string): Promise<void> {
         proc.stderr.on("data", chunk => errorOutput += chunk.toString());
 
         proc.on("error", err => {
-            reject(new Error(`Failed to execute binary: ${err.message}`));
+            reject(err);
         });
 
         proc.on("exit", (code, signal) => {
@@ -142,7 +152,7 @@ export async function ensureBinWithVersion(version: string): Promise<string> {
     const release = await installable(_binPath);
 
     if (release) {
-        _binPath = await dowloadBin(version);
+        _binPath = await downloadBin(version);
         process.env["NEAR_SANDBOX_BIN_PATH"] = _binPath;
 
         await release();
@@ -151,8 +161,10 @@ export async function ensureBinWithVersion(version: string): Promise<string> {
         await pingBin(_binPath);
     } catch (error) {
         await fs.rm(join(__dirname, "..", "..", "bin", `near-sandbox-${version}`), { recursive: true, force: true });
-        throw new Error(`Binary doesn't respond, probably is corrupted.\n` +
-            `Try re-downloading`);
+        throw new TypedError(`Binary doesn't respond, probably is corrupted. Try re-downloading`,
+            BinaryErrors.RunningFailed,
+            error instanceof Error ? error : new Error(String(error))
+        );
     }
     return _binPath;
 }

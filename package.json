@@ -42,6 +42,9 @@
     "changeset": "changeset",
     "release": "changeset publish"
   },
+  "engines": {
+    "node": ">=16.9"
+  },
   "files": [
     "*.js",
     "bin",

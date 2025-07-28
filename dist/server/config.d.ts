@@ -9,7 +9,7 @@ export declare class GenesisAccount {
     balance: bigint;
     constructor(accountId: string, publicKey: string, privateKey: string, balance: bigint);
     static createDefault(accountId?: string): GenesisAccount;
-    static random(accountId?: string, balance?: string | number): GenesisAccount;
+    static createRandom(accountId?: string, balance?: string | number): GenesisAccount;
     private static _generateRandomAccountId;
 }
 export interface SandboxConfig {

@@ -1,6 +1,4 @@
-// import { Binary } from "./Binary";
-// import { join } from "path";
-import { stat, rm as RM } from "fs/promises";
+import { stat} from "fs/promises";
 import * as os from "os";
 
 const DEFAULT_NEAR_SANDBOX_VERSION = "2.6.5";
@@ -16,7 +14,7 @@ function getPlatform() {
     return [type, "arm64"];
   }
 
-  throw new Error(`Unsupported platform: ${type} ${arch}`);
+  throw new Error("Only linux-x86 and darwin-arm are supported");
 }
 
 export function AWSUrl(version: string = DEFAULT_NEAR_SANDBOX_VERSION): string {
@@ -34,30 +32,3 @@ export async function fileExists(filePath: string): Promise<boolean> {
 }
 
 export const inherit: "inherit" = "inherit";
-
-export async function rm(path: string): Promise<void> {
-  try {
-    await RM(path);
-  } catch (e) { }
-}
-
-// export function getBinary(name: string = "near-sandbox", version?: string): Promise<Binary> {
-//   if (!process.env["NEAR_SANDBOX_BIN_PATH"]) {
-//     process.env["NEAR_SANDBOX_BINARY_PATH"] = join(
-//       os.homedir(),
-//       ".near",
-//       "sandbox"
-//     );
-//   }
-
-//   // Will use version after publishing to AWS
-//   // const version = require("./package.json").version;
-//   const fromEnv = process.env["SANDBOX_ARTIFACT_URL"];
-//   const urls = [AWSUrl(version)];
-//   if (fromEnv) {
-//     urls.unshift(fromEnv);
-//   }
-
-//   return Binary.create(name, urls);
-// }
-

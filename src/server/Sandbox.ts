@@ -1,10 +1,12 @@
 import { dir, DirectoryResult } from "tmp-promise";
-import { initHomeDirWithVersion, runWithArgsAndVersion } from "../binary/binaryExecution";
+import { initConfigsToTmpWithVersion, runWithArgsAndVersion } from "../binary/binaryExecution";
 import { SandboxConfig, setSandboxConfig, setSandboxGenesis } from "./config";
 import { ChildProcess } from "child_process";
 import { acquireOrLockPort, rpcSocket } from "./sandboxUtils";
 import { unlock } from "proper-lockfile";
 import { rm } from "fs/promises";
+import { SandboxErrors, TypedError } from "../errors";
+import got from "got";
 
 export const DEFAULT_NEAR_SANDBOX_VERSION = "2.6.5";
 
@@ -46,8 +48,10 @@ export class Sandbox {
     static async start(params: StartParams): Promise<Sandbox> {
         const config: SandboxConfig = params.config || {};
         const version: string = params.version || DEFAULT_NEAR_SANDBOX_VERSION;
-        // Initialize home directory with the specified version get home directory
-        const homeDir = await this.initHomeDirWithVersion(version);
+        // Ensure Binary downloaded with specified version
+        // Initialize tmp directory with the specified version
+        // get tmp directory with default configs
+        const tmpDir = await this.initConfigsWithVersion(version);
         // get ports
         const { port: rpcPort, lockFilePath: rpcPortLock } = await acquireOrLockPort(config?.rpcPort);
         const { port: netPort, lockFilePath: netPortLock } = await acquireOrLockPort(config?.netPort);
@@ -55,10 +59,10 @@ export class Sandbox {
         const rpcAddr = rpcSocket(rpcPort);
         const netAddr = rpcSocket(netPort);
         // set sandbox configs
-        await setSandboxGenesis(homeDir.path, config);
-        await setSandboxConfig(homeDir.path, config);
+        await setSandboxGenesis(tmpDir.path, config);
+        await setSandboxConfig(tmpDir.path, config);
         // create options and args to spawn the process
-        const options = ["--home", homeDir.path, "run", "--rpc-addr", rpcAddr, "--network-addr", netAddr];
+        const options = ["--home", tmpDir.path, "run", "--rpc-addr", rpcAddr, "--network-addr", netAddr];
         // Run sandbox with the specified version and arguments, get ChildProcess
         const childProcess = await runWithArgsAndVersion(version, options);
 
@@ -68,39 +72,47 @@ export class Sandbox {
         await this.waitUntilReady(rpcUrl);
 
         // return new Sandbox instance
-        return new Sandbox(rpcUrl, homeDir, childProcess, rpcPortLock, netPortLock);
+        return new Sandbox(rpcUrl, tmpDir, childProcess, rpcPortLock, netPortLock);
     }
 
     async tearDown(cleanup: boolean = false): Promise<void> {
-        try {
-            await Promise.all([
-                unlock(this.rpcPortLockPath),
-                unlock(this.netPortLockPath)
-            ]);
-        } catch (error) {
-            throw new Error("Failed to unlock ports: " + error);
-        }
+        const errors: Error[] = [];
         const success = this.childProcess.kill();
 
         if (!success) {
-            throw new Error("Failed to kill the child process");
+            errors.push(new Error("Failed to kill the child process"));
         }
+
+        const unlockResults = await Promise.allSettled([
+            unlock(this.rpcPortLockPath),
+            unlock(this.netPortLockPath)
+        ]);
+        unlockResults.forEach(result => {
+            if (result.status === 'rejected') {
+                errors.push(new Error("Failed to unlock port: " + result.reason));
+            }
+        });
 
         if (cleanup) {
             await Promise.race([
                 new Promise(resolve => this.childProcess.once('exit', resolve))
             ]);
             await rm(this.homeDir, { recursive: true, force: true }).catch(error => {
-                throw new Error(`Failed to remove sandbox home directory: ${error}`);
+                errors.push(new Error(`Failed to remove sandbox home directory: ${error}`));
             });
-
+        }
+        if (errors.length > 0) {
+            const combined = errors.map(e => `- ${e.message}`).join("\n");
+            throw new TypedError(`Sandbox teardown encountered errors`,
+                SandboxErrors.TearDownFailed,
+                new Error(combined));
         }
     }
 
-    private static async initHomeDirWithVersion(version: string): Promise<DirectoryResult> {
-        const homeDir = await dir({ unsafeCleanup: true });
-        await initHomeDirWithVersion(version, homeDir);
-        return homeDir;
+    private static async initConfigsWithVersion(version: string): Promise<DirectoryResult> {
+        const tmpDir = await dir({ unsafeCleanup: true });
+        await initConfigsToTmpWithVersion(version, tmpDir);
+        return tmpDir;
     }
 
     private static async waitUntilReady(rpcUrl: string) {
@@ -109,8 +121,8 @@ export class Sandbox {
         let lastError: unknown = null;
         for (let i = 0; i < attempts; i++) {
             try {
-                const response = await fetch(`${rpcUrl}/status`);
-                if (response.ok) {
+                const response = await got(`${rpcUrl}/status`, { throwHttpErrors: false });
+                if (response.statusCode >= 200 && response.statusCode < 300) {
                     return;
                 }
             } catch (error) {
@@ -118,10 +130,9 @@ export class Sandbox {
             }
             await new Promise(resolve => setTimeout(resolve, 500));
         }
-        if (lastError) {
-            throw lastError;
-        } else {
-            throw new Error("Sandbox failed to become ready within the timeout period.");
-        }
+        throw new TypedError("Sandbox failed to become ready within the timeout period.",
+            SandboxErrors.RunFailed,
+            lastError instanceof Error ? lastError : new Error(String(lastError))
+        );
     }
 }

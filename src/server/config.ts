@@ -3,6 +3,7 @@ import { KeyPair } from "@near-js/crypto";
 import { join } from "path";
 import { apply } from "json-merge-patch"
 import * as fs from "fs/promises";
+import { SandboxErrors, TypedError } from "../errors";
 
 export const DEFAULT_ACCOUNT_ID = 'sandbox';
 export const DEFAULT_PUBLIC_KEY = 'ed25519:5BGSaf6YjVm7565VzWQHNxoyEjwr3jUpRJSGjREvU9dB';
@@ -14,7 +15,7 @@ export class GenesisAccount {
   accountId: string; //Document this and reference to official NEAR documentation
   publicKey: string;
   privateKey: string;
-  balance: bigint; //NEAR balance in yoctoNEAR
+  balance: bigint; //balance in yoctoNEAR
 
   constructor(accountId: string, publicKey: string, privateKey: string, balance: bigint) {
     this.accountId = accountId;
@@ -33,7 +34,7 @@ export class GenesisAccount {
   }
 
   // balance in near
-  static random(accountId?: string, balance?: string | number): GenesisAccount {
+  static createRandom(accountId?: string, balance?: string | number): GenesisAccount {
     const finalAccountId = accountId ?? this._generateRandomAccountId();
     const finalBalance =
       balance !== undefined && balance !== null
@@ -81,14 +82,14 @@ export async function setSandboxGenesis(
   homeDir: string, // Path to the genesis.json directory
   config?: SandboxConfig
 ): Promise<void> {
-  // This function  modify the genesis.json file in the specified homeDir
+  // This function modifies the genesis.json file in the specified homeDir
   await overwriteGenesis(homeDir, config);
 
   const additionalAccountsWithDefault: GenesisAccount[] = [
     GenesisAccount.createDefault(),
     ...(config?.additionalAccounts ?? [])
   ];
-  // This function create an {accountId}.json file in the homeDir
+  // This function create an {accountId}.json file in the homeDir for each account
   await saveAccountsKeys(homeDir, additionalAccountsWithDefault);
 }
 
@@ -100,7 +101,7 @@ export async function setSandboxConfig(homeDir: string, config?: SandboxConfig):
     parseEnv<number>("NEAR_SANDBOX_MAX_PAYLOAD_SIZE", (s) => {
       const num = parseInt(s);
       if (isNaN(num)) {
-        throw new Error(`Invalid NEAR_SANDBOX_MAX_PAYLOAD_SIZE type: ${s}`);
+        throw new TypedError(`Invalid NEAR_SANDBOX_MAX_PAYLOAD_SIZE type`, SandboxErrors.InvalidConfig);
       }
       return num;
     }) ??
@@ -111,7 +112,7 @@ export async function setSandboxConfig(homeDir: string, config?: SandboxConfig):
     parseEnv<number>("NEAR_SANDBOX_MAX_OPEN_FILES", (s) => {
       const num = parseInt(s);
       if (isNaN(num)) {
-        throw new Error(`Invalid NEAR_SANDBOX_MAX_OPEN_FILES type: ${s}`);
+        throw new TypedError(`Invalid NEAR_SANDBOX_MAX_OPEN_FILES type`, SandboxErrors.InvalidConfig);
       }
       return num;
     }) ??
@@ -148,7 +149,7 @@ async function overwriteGenesis(
 
   let totalSupply = BigInt(genesisObj['total_supply']);
   if (totalSupply === null || totalSupply === undefined) {
-    throw new Error("Total supply not found in genesis.json");
+    throw new TypedError("Total supply not found in default genesis.json", SandboxErrors.InvalidConfig);
   }
 
   const accountsToAdd: GenesisAccount[] = [
@@ -162,7 +163,7 @@ async function overwriteGenesis(
   genesisObj['total_supply'] = totalSupply.toString();
 
   if (!Array.isArray(genesisObj['records'])) {
-    throw new Error("Expected 'records' to be an array in genesis.json");
+    throw new TypedError("Expected 'records' to be an array in default genesis.json", SandboxErrors.InvalidConfig);
   }
 
   for (const acc of accountsToAdd) {
@@ -208,11 +209,7 @@ async function saveAccountsKeys(homeDir: string, additionalAccountsWithDefault: 
     const filePath = join(homeDir, fileName);
     const keyContent = JSON.stringify(keyJson, null, 2);
 
-    try {
-      await fs.writeFile(filePath, keyContent, 'utf-8');
-    } catch (err) {
-      throw new Error(`Failed to write key file for ${account.accountId}: ${(err as Error).message}`);
-    }
+    await fs.writeFile(filePath, keyContent, 'utf-8');
   }
 }
 

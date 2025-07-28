@@ -2,5 +2,5 @@ near-vm-*.tar.gz
 nearcore/
 node_modules/
 builds
-test_destination/
+test_files/
 .vscode/
