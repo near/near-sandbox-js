@@ -1,3 +1,9 @@
+/**
+ * This test demonstrates basic behavior of near-sandbox-js, 
+ * starting a sandbox with a custom version.
+ * This allows it to interact with returned rpcUrl and imports default account.
+ * Also shows how to create a new account and send tokens to it.
+ */
 import test from 'ava';
 import { Sandbox } from '../src/server/Sandbox';
 import { KeyPair } from '@near-js/crypto';

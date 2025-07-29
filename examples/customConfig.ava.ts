@@ -1,3 +1,8 @@
+/**    
+* This test demonstrates providing a custom configuration to the sandbox,
+* including additional accounts and genesis parameters.
+* Be careful to ensure that additional properties in your own configurations are correct.
+ */
 import test from "ava";
 import { Sandbox } from "../src/server/Sandbox";
 import { SandboxConfig } from "../src/server/config";

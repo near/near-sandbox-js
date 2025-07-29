@@ -5,17 +5,33 @@ import { apply } from "json-merge-patch"
 import * as fs from "fs/promises";
 import { SandboxErrors, TypedError } from "../errors";
 
+/*
+  * Network specific configurations used to modify behavior inside a chain.
+  * This is so far only useable with sandbox networks since it would require
+  * direct access to a node to change the config. Each network like mainnet
+  * and testnet already have pre-configured settings; meanwhile sandbox can
+  * have additional settings on top of them to facilitate custom behavior
+  * such as sending large requests to the sandbox network.
+  */
+
 export const DEFAULT_ACCOUNT_ID = 'sandbox';
 export const DEFAULT_PUBLIC_KEY = 'ed25519:5BGSaf6YjVm7565VzWQHNxoyEjwr3jUpRJSGjREvU9dB';
 export const DEFAULT_PRIVATE_KEY = 'ed25519:3tgdk2wPraJzT4nsTuf86UX41xgPNk3MHnq8epARMdBNs29AFEztAuaQ7iHddDfXG9F2RzV1XNQYgJyAyoW51UBB';
 export const DEFAULT_BALANCE = NEAR.toUnits(10000);
 
-
+/*
+  * Represents a genesis account in the NEAR sandbox.
+  * Means it will saved as starting account in the genesis.json file.
+  * accountId - The unique identifier for the account, it`s can be top-level account or sub-account.(e.g. "alice.near", "alice")
+  * publicKey - The public part of the privateKey that will control the account.
+  * privateKey - The private key used to sign transactions for the account.
+  * balance - The initial balance of the account in yoctoNEAR.
+  */
 export class GenesisAccount {
-  accountId: string; //Document this and reference to official NEAR documentation
+  accountId: string; 
   publicKey: string;
   privateKey: string;
-  balance: bigint; //balance in yoctoNEAR
+  balance: bigint;
 
   constructor(accountId: string, publicKey: string, privateKey: string, balance: bigint) {
     this.accountId = accountId;
@@ -24,6 +40,13 @@ export class GenesisAccount {
     this.balance = balance;
   }
 
+  /**
+   * Creates a default genesis account with predefined values.
+   * This is useful for testing and development purposes.
+   *
+   * @param accountId Optional custom account ID, defaults to DEFAULT_ACCOUNT_ID.
+   * @returns A GenesisAccount instance with default values.
+   */
   static createDefault(accountId?: string): GenesisAccount {
     return new GenesisAccount(
       accountId ?? DEFAULT_ACCOUNT_ID,
@@ -33,7 +56,15 @@ export class GenesisAccount {
     );
   }
 
-  // balance in near
+  /**
+   * Creates a random genesis account with a unique account ID.
+   * The account ID is generated based on the current time and a random number.
+   * WARNING: Prefer using `createDefault` or defining 'GenesisAccount' from the scratch
+   *
+   * @param accountId Optional custom account ID, if not provided a random one will be generated.
+   * @param balance Optional initial balance for the account, defaults to DEFAULT_BALANCE.
+   * @returns A GenesisAccount instance with a random account ID and specified balance.
+   */
   static createRandom(accountId?: string, balance?: string | number): GenesisAccount {
     const finalAccountId = accountId ?? this._generateRandomAccountId();
     const finalBalance =
@@ -68,6 +99,17 @@ export class GenesisAccount {
 
 }
 
+/**
+ * Configuration options for the NEAR sandbox environment.
+ * This interface allows customization of the sandbox's behavior.
+ * @property rpcPort - Port that RPC will be bound to. Will be picked randomly if not set.
+ * @property netPort - Port that the network will be bound to. Will be picked randomly if not set.
+ * @property maxPayloadSize - Maximum payload size for JSON RPC requests in bytes (default: 1GB).
+ * @property maxOpenFiles - Maximum number of open files (default: 3000).
+ * @property additionalConfig - Additional JSON configuration to merge with the default config. Ensure that the additional properties are correct.
+ * @property additionalGenesis - Additional genesis parameters to modify the genesis.json.
+ * @property additionalAccounts - Additional accounts to be passed in the sandbox genesis.
+ */
 export interface SandboxConfig {
   rpcPort?: number;
   netPort?: number;

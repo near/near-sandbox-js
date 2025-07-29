@@ -7,10 +7,26 @@ const path_1 = require("path");
 const json_merge_patch_1 = require("json-merge-patch");
 const fs = require("fs/promises");
 const errors_1 = require("../errors");
+/*
+  * Network specific configurations used to modify behavior inside a chain.
+  * This is so far only useable with sandbox networks since it would require
+  * direct access to a node to change the config. Each network like mainnet
+  * and testnet already have pre-configured settings; meanwhile sandbox can
+  * have additional settings on top of them to facilitate custom behavior
+  * such as sending large requests to the sandbox network.
+  */
 exports.DEFAULT_ACCOUNT_ID = 'sandbox';
 exports.DEFAULT_PUBLIC_KEY = 'ed25519:5BGSaf6YjVm7565VzWQHNxoyEjwr3jUpRJSGjREvU9dB';
 exports.DEFAULT_PRIVATE_KEY = 'ed25519:3tgdk2wPraJzT4nsTuf86UX41xgPNk3MHnq8epARMdBNs29AFEztAuaQ7iHddDfXG9F2RzV1XNQYgJyAyoW51UBB';
 exports.DEFAULT_BALANCE = tokens_1.NEAR.toUnits(10000);
+/*
+  * Represents a genesis account in the NEAR sandbox.
+  * Means it will saved as starting account in the genesis.json file.
+  * accountId - The unique identifier for the account, it`s can be top-level account or sub-account.(e.g. "alice.near", "alice")
+  * publicKey - The public part of the privateKey that will control the account.
+  * privateKey - The private key used to sign transactions for the account.
+  * balance - The initial balance of the account in yoctoNEAR.
+  */
 class GenesisAccount {
     constructor(accountId, publicKey, privateKey, balance) {
         Object.defineProperty(this, "accountId", {
@@ -18,7 +34,7 @@ class GenesisAccount {
             configurable: true,
             writable: true,
             value: void 0
-        }); //Document this and reference to official NEAR documentation
+        });
         Object.defineProperty(this, "publicKey", {
             enumerable: true,
             configurable: true,
@@ -36,16 +52,31 @@ class GenesisAccount {
             configurable: true,
             writable: true,
             value: void 0
-        }); //balance in yoctoNEAR
+        });
         this.accountId = accountId;
         this.publicKey = publicKey;
         this.privateKey = privateKey;
         this.balance = balance;
     }
+    /**
+     * Creates a default genesis account with predefined values.
+     * This is useful for testing and development purposes.
+     *
+     * @param accountId Optional custom account ID, defaults to DEFAULT_ACCOUNT_ID.
+     * @returns A GenesisAccount instance with default values.
+     */
     static createDefault(accountId) {
         return new GenesisAccount(accountId !== null && accountId !== void 0 ? accountId : exports.DEFAULT_ACCOUNT_ID, exports.DEFAULT_PUBLIC_KEY, exports.DEFAULT_PRIVATE_KEY, exports.DEFAULT_BALANCE);
     }
-    // balance in near
+    /**
+     * Creates a random genesis account with a unique account ID.
+     * The account ID is generated based on the current time and a random number.
+     * WARNING: Prefer using `createDefault` or defining 'GenesisAccount' from the scratch
+     *
+     * @param accountId Optional custom account ID, if not provided a random one will be generated.
+     * @param balance Optional initial balance for the account, defaults to DEFAULT_BALANCE.
+     * @returns A GenesisAccount instance with a random account ID and specified balance.
+     */
     static createRandom(accountId, balance) {
         const finalAccountId = accountId !== null && accountId !== void 0 ? accountId : this._generateRandomAccountId();
         const finalBalance = balance !== undefined && balance !== null
@@ -70,8 +101,7 @@ class GenesisAccount {
     }
 }
 exports.GenesisAccount = GenesisAccount;
-async function setSandboxGenesis(homeDir, // Path to the genesis.json directory
-config) {
+async function setSandboxGenesis(homeDir, config) {
     var _a;
     // This function modifies the genesis.json file in the specified homeDir
     await overwriteGenesis(homeDir, config);

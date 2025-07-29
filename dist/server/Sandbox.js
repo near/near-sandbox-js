@@ -10,6 +10,28 @@ const promises_1 = require("fs/promises");
 const errors_1 = require("../errors");
 const got_1 = require("got");
 exports.DEFAULT_NEAR_SANDBOX_VERSION = "2.6.5";
+/**
+ * `Sandbox` provides an isolated, ephemeral NEAR blockchain environment for local testing.
+ *
+ * Internally, it wraps the execution of the `near-sandbox` binary with configuration options,
+ * port locking, and lifecycle management. It ensures proper startup and teardown for reliable testing.
+ *
+ * @example
+ * ```ts
+ * import { Sandbox } from './sandbox';
+ *
+ * const sandbox = await Sandbox.start({
+ *   config: {
+ *     rpcPort: 3030,
+ *     additionalGenesis: { epoch_length: 250 },
+ *   }
+ * });
+ *
+ * console.log('Sandbox running at', sandbox.rpcUrl);
+ * // Use the sandbox...
+ * await sandbox.tearDown(true); // Cleans up temp dir and releases ports
+ * ```
+ */
 class Sandbox {
     constructor(rpcUrl, homeDir, childProcess, rpcPortLock, netPortLock) {
         Object.defineProperty(this, "_rpcUrl", {
@@ -48,23 +70,53 @@ class Sandbox {
         this._netPortLockPath = netPortLock;
         this.childProcess = childProcess;
     }
+    /**
+     * The URL of the running sandbox's RPC endpoint.
+     */
     get rpcUrl() {
         return this._rpcUrl;
     }
+    /**
+     * The path to the temporary home directory used by the sandbox.
+     * This directory contains all the sandbox state, configuration and accounts keys.
+     */
     get homeDir() {
         return this._homeDir.path;
     }
+    /**
+     * The lock file path for the RPC port.
+     * This is used to ensure that the port is not used by another process.
+     */
     get rpcPortLockPath() {
         return this._rpcPortLockPath;
     }
+    /**
+     * The lock file path for the network port.
+     * This is used to ensure that the port is not used by another process.
+     */
     get netPortLockPath() {
         return this._netPortLockPath;
     }
+    /**
+    * Launch a sandbox environment.
+    *
+    * Downloads the appropriate binary version (if not cached), locks two available ports (RPC & network),
+    * generates a temporary home directory, and spawns the `neard-sandbox` binary with runtime args.
+    *
+    * @param params Configuration options:
+    *   - `config` - Optional sandbox configuration like RPC port, additional genesis data, accounts etc.
+    *   - `version` - Optional NEAR sandbox binary version.
+    *
+    * @returns A ready-to-use `Sandbox` instance with `.rpcUrl` and `.homeDir` available.
+    *
+    * @throws {TypedError} if the sandbox fails to start, ports cannot be locked, or config setup fails.
+    */
     static async start(params) {
         const config = params.config || {};
         const version = params.version || exports.DEFAULT_NEAR_SANDBOX_VERSION;
         // Ensure Binary downloaded with specified version
-        // Initialize tmp directory with the specified version get tmp directory with default configs
+        // Initialize tmp directory with the specified version
+        // get tmp directory with default configs
         const tmpDir = await this.initConfigsWithVersion(version);
         // get ports
         const { port: rpcPort, lockFilePath: rpcPortLock } = await (0, sandboxUtils_1.acquireOrLockPort)(config === null || config === void 0 ? void 0 : config.rpcPort);
@@ -84,6 +136,16 @@ class Sandbox {
         // return new Sandbox instance
         return new Sandbox(rpcUrl, tmpDir, childProcess, rpcPortLock, netPortLock);
     }
+    /**
+     * Destroys the running sandbox environment by:
+     * - Killing the child process
+     * - Unlocking the previously locked ports
+     * - Optionally cleaning up the home directory
+     *
+     * @param cleanup If true, deletes the sandbox’s temp home directory.
+     *
+     * @throws {TypedError} if cleanup or shutdown fails partially or completely.
+     */
     async tearDown(cleanup = false) {
         const errors = [];
         const success = this.childProcess.kill();

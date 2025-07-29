@@ -5,7 +5,7 @@ const binaryUtils_1 = require("./binaryUtils");
 const child_process_1 = require("child_process");
 const binary_1 = require("./binary");
 const path_1 = require("path");
-// initializes a sandbox with provided version and home directory
+// initializes a sandbox with provided version and tmp directory
 async function initConfigsToTmpWithVersion(version, tmpDir) {
     const bin = await (0, binary_1.ensureBinWithVersion)(version);
     const result = (0, child_process_1.spawn)(bin, ["--home", tmpDir.path, "init", "--fast"], { stdio: [null, null, binaryUtils_1.inherit] });
