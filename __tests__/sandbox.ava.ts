@@ -11,59 +11,75 @@ import { lock } from 'proper-lockfile';
 test('Sandbox.start() returns a valid instance with default config and version', async (t) => {
     const sandbox = await Sandbox.start({});
     t.truthy(sandbox);
-    t.truthy(sandbox.rpcUrl);
-    t.truthy(sandbox.homeDir);
     t.true(typeof sandbox.rpcUrl === 'string');
     t.true(typeof sandbox.homeDir === 'string');
-
+    t.true(existsSync(join(sandbox.homeDir, "config.json")));
+    t.true(existsSync(join(sandbox.homeDir, "genesis.json")));
+    t.true(existsSync(join(sandbox.homeDir, "sandbox.json")));
+    t.true(existsSync(sandbox.rpcPortLockPath));
     await sandbox.tearDown();
 });
 
 test('Sandbox.start() accepts custom config and version', async (t) => {
+    const rpcPort = 3030;
     const customConfig: SandboxConfig = {
-        rpcPort: 3030,
+        rpcPort: rpcPort,
         additionalGenesis: { epoch_length: 100 },
         additionalAccounts: [
-            GenesisAccount.random("alice.near", "1000"),
+            GenesisAccount.createRandom("alice.near", "1000"),
         ],
         maxOpenFiles: 100
     };
     const sandbox = await Sandbox.start({ config: customConfig, version: '2.6.5' });
 
     t.truthy(sandbox);
-
-    await sandbox.tearDown();
-});
-
-//TODO: manage error handling for unsupported versions
-test('Sandbox throws if provided version is unsupported', async (t) => {
-    const unsupportedVersion = '4.0.0';
-    if (unsupportedVersion === '4.0.0') {
-        t.log('Unsupported version');
-    }
-});
-
-test('Sandbox.tearDown() cleans up resources', async t => {
-    const sandbox = await Sandbox.start({});
-
-    const dirExistsBefore = existsSync(sandbox.homeDir);
-    t.true(dirExistsBefore);
-
-    await sandbox.tearDown(true);
-
-    const dirExistsAfter = existsSync(sandbox.homeDir);
-
-    t.false(dirExistsAfter);
-});
-
-
-test('Sandbox uses provided rpcPort and returns correct rpcUrl', async (t) => {
-    const rpcPort = 3040;
-    const sandbox = await Sandbox.start({ config: { rpcPort } });
-
     t.is(sandbox.rpcUrl, `http://127.0.0.1:${rpcPort}`);
 
     await sandbox.tearDown();
+});
+
+test('Sandbox throws if provided version is unsupported', async (t) => {
+    const unsupportedVersion = '14.0.0';
+    await t.throwsAsync(
+        () => Sandbox.start({ version: unsupportedVersion }),
+        {
+            instanceOf: Error,
+            message: /Failed to download binary. Check Url and version/,
+        }
+    );
+});
+
+test('Sandbox.tearDown() cleans up resources and unlocks ports', async t => {
+    const server = net.createServer();
+    const rpcPort = 3040;
+    const sandbox = await Sandbox.start({ config: { rpcPort } });
+
+    const dirExistsBefore = existsSync(sandbox.homeDir);
+    t.true(dirExistsBefore);
+    await t.throwsAsync(() => {
+        return new Promise<void>((resolve, reject) => {
+            server.once('error', (err) => {
+                server.close();
+                reject(err);
+            });
+            server.listen(rpcPort, () => {
+                server.close(() => resolve());
+            });
+        });
+    }, { message: /EADDRINUSE/ });
+
+    await sandbox.tearDown(true);
+    await t.notThrowsAsync(() => {
+        return new Promise<void>((resolve, reject) => {
+            server.once('error', reject);
+            server.listen(rpcPort, () => {
+                server.close(() => resolve());
+            });
+        });
+    });
+    const dirExistsAfter = existsSync(sandbox.homeDir);
+
+    t.false(dirExistsAfter);
 });
 
 test('Sandbox throws if provided rpcPort is already in use', async (t) => {
@@ -83,20 +99,21 @@ test('Sandbox throws if provided rpcPort is already in use', async (t) => {
     }
 });
 
-test('Sandbox fails to start if rpcPort lock is held by another process', async (t) => {
+test('Another process can`t bind sandbox`s rpcPort', async (t) => {
     const rpcPort = 3060;
+    const sandbox = await Sandbox.start({ config: { rpcPort } });
     const lockFilePath = join(tmpdir(), `near-sandbox-port-${rpcPort}.lock`);
 
-    await writeFile(lockFilePath, '');
-    const release = await lock(lockFilePath, { retries: 0 });
-
     try {
-        await t.throwsAsync(() =>
-            Sandbox.start({ config: { rpcPort } })
-            , {
-                message: /Failed to lock port/,
-            });
+        await writeFile(lockFilePath, '');
+        await t.throwsAsync(
+            async () => { await lock(lockFilePath, { retries: 0 }); },
+            {
+                instanceOf: Error,
+                message: /Lock file is already being held/,
+            }
+        );
     } finally {
-        await release(); // unlock
+        await sandbox.tearDown();
     }
 });

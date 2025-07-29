@@ -79,7 +79,7 @@ export interface SandboxConfig {
 }
 
 export async function setSandboxGenesis(
-  homeDir: string, // Path to the genesis.json directory
+  homeDir: string,
   config?: SandboxConfig
 ): Promise<void> {
   // This function modifies the genesis.json file in the specified homeDir

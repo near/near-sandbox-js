@@ -1,15 +1,32 @@
 import test from "ava";
 import { join } from "path";
-import { Binary } from "../src";
+import { DEFAULT_NEAR_SANDBOX_VERSION, Sandbox } from "../src/server/Sandbox";
+import { TypedError } from "../src/errors";
 
-const TEST_FILES_PATH = join(__dirname, "..", "test_files");
-process.env['NEAR_SANDBOX_BINARY_PATH'] = TEST_FILES_PATH;
+const TEST_BIN_DIR = join(__dirname, "..", "test_files");
+const TEST_BIN_PATH = join(TEST_BIN_DIR, `near-sandbox-${DEFAULT_NEAR_SANDBOX_VERSION}`, "near-sandbox");
 
-const name = "near-sandbox";
-const fakeUrl = "https://example.com";
+test.before("can use local file", async (t) => {
+  process.env['DIR_TO_DOWNLOAD_BINARY'] = TEST_BIN_DIR;
+  const sandbox = await Sandbox.start({});
+  const response = await fetch(`${sandbox.rpcUrl}/status`);
+  t.is(response.status, 200);
+  await t.notThrowsAsync(async () => await sandbox.tearDown());
+});
 
-test("can use local file", async (t) => {
-  const bin = await Binary.create(name, fakeUrl);
-  t.is(bin.installDir, TEST_FILES_PATH);
-  t.assert(await bin.exists());
+test("fails to start sandbox if local binary path does not exist", async (t) => {
+  process.env['NEAR_SANDBOX_BIN_PATH'] = "Not-existing-path";
+
+  await t.throwsAsync(
+    () => Sandbox.start({}),
+    {
+      instanceOf: TypedError,
+      message: /NEAR_SANDBOX_BIN_PATH does not exist\./,
+    }
+  );
+  process.env['NEAR_SANDBOX_BIN_PATH'] = TEST_BIN_PATH;
+  const sandbox = await Sandbox.start({});
+  t.truthy(sandbox);
+  await t.notThrowsAsync(async () => await sandbox.tearDown());
+
 });
