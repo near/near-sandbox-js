@@ -25,33 +25,20 @@ interface StartParams {
  * // Use the sandbox...
  * await sandbox.tearDown(true); // Cleans up temp dir and releases ports
  * ```
+ *
+ * @property rpcUrl - The URL of the running sandbox's RPC endpoint.(e.g. "http://127.0.0.1:{port}")
+ * @property homeDir - The path to the temporary home directory used by the sandbox.
+ * This directory contains all the sandbox state, configuration and accounts keys.
+ * @property rpcPortLockPath - Path to the lock file that prevents other processes from using the same RPC port until this sandbox is started.
+ * @property netPortLockPath - Path to the lock file for the network port.
  */
 export declare class Sandbox {
-    private _rpcUrl;
-    private _homeDir;
-    private _rpcPortLockPath;
-    private _netPortLockPath;
+    readonly rpcUrl: string;
+    readonly homeDir: string;
+    readonly rpcPortLockPath: string;
+    readonly netPortLockPath: string;
     private childProcess;
     private constructor();
-    /**
-     * The URL of the running sandbox's RPC endpoint.
-     */
-    get rpcUrl(): string;
-    /**
-     * The path to the temporary home directory used by the sandbox.
-     * This directory contains all the sandbox state, configuration and accounts keys.
-     */
-    get homeDir(): string;
-    /**
-     * The lock file path for the RPC port.
-     * This is used to ensure that the port is not used by another process.
-     */
-    get rpcPortLockPath(): string;
-    /**
-     * The lock file path for the network port.
-     * This is used to ensure that the port is not used by another process.
-     */
-    get netPortLockPath(): string;
     /**
     * Launch a sandbox environment.
     *

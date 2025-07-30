@@ -134,7 +134,7 @@ async function ensureBinWithVersion(version) {
         await pingBin(_binPath);
     }
     catch (error) {
-        await fs.rm((0, path_1.join)(__dirname, "..", "..", "bin", `near-sandbox-${version}`), { recursive: true, force: true });
+        await fs.rm((0, path_1.join)(process.cwd(), "bin", `near-sandbox-${version}`), { recursive: true, force: true });
         throw new errors_1.TypedError(`Binary doesn't respond, probably is corrupted. Try re-downloading`, errors_1.BinaryErrors.RunningFailed, error instanceof Error ? error : new Error(String(error)));
     }
     return _binPath;

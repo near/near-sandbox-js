@@ -31,28 +31,34 @@ exports.DEFAULT_NEAR_SANDBOX_VERSION = "2.6.5";
  * // Use the sandbox...
  * await sandbox.tearDown(true); // Cleans up temp dir and releases ports
  * ```
+ *
+ * @property rpcUrl - The URL of the running sandbox's RPC endpoint.(e.g. "http://127.0.0.1:{port}")
+ * @property homeDir - The path to the temporary home directory used by the sandbox.
+ * This directory contains all the sandbox state, configuration and accounts keys.
+ * @property rpcPortLockPath - Path to the lock file that prevents other processes from using the same RPC port until this sandbox is started.
+ * @property netPortLockPath - Path to the lock file for the network port.
  */
 class Sandbox {
     constructor(rpcUrl, homeDir, childProcess, rpcPortLock, netPortLock) {
-        Object.defineProperty(this, "_rpcUrl", {
+        Object.defineProperty(this, "rpcUrl", {
             enumerable: true,
             configurable: true,
             writable: true,
             value: void 0
         });
-        Object.defineProperty(this, "_homeDir", {
+        Object.defineProperty(this, "homeDir", {
             enumerable: true,
             configurable: true,
             writable: true,
             value: void 0
         });
-        Object.defineProperty(this, "_rpcPortLockPath", {
+        Object.defineProperty(this, "rpcPortLockPath", {
             enumerable: true,
             configurable: true,
             writable: true,
             value: void 0
         });
-        Object.defineProperty(this, "_netPortLockPath", {
+        Object.defineProperty(this, "netPortLockPath", {
             enumerable: true,
             configurable: true,
             writable: true,
@@ -64,38 +70,11 @@ class Sandbox {
             writable: true,
             value: void 0
         });
-        this._rpcUrl = rpcUrl;
-        this._homeDir = homeDir;
-        this._rpcPortLockPath = rpcPortLock;
-        this._netPortLockPath = netPortLock;
+        this.rpcUrl = rpcUrl;
+        this.homeDir = homeDir;
+        this.rpcPortLockPath = rpcPortLock;
+        this.netPortLockPath = netPortLock;
         this.childProcess = childProcess;
-    }
-    /**
-     * The URL of the running sandbox's RPC endpoint.
-     */
-    get rpcUrl() {
-        return this._rpcUrl;
-    }
-    /**
-     * The path to the temporary home directory used by the sandbox.
-     * This directory contains all the sandbox state, configuration and accounts keys.
-     */
-    get homeDir() {
-        return this._homeDir.path;
-    }
-    /**
-     * The lock file path for the RPC port.
-     * This is used to ensure that the port is not used by another process.
-     */
-    get rpcPortLockPath() {
-        return this._rpcPortLockPath;
-    }
-    /**
-     * The lock file path for the network port.
-     * This is used to ensure that the port is not used by another process.
-     */
-    get netPortLockPath() {
-        return this._netPortLockPath;
     }
     /**
     * Launch a sandbox environment.
@@ -134,7 +113,7 @@ class Sandbox {
         // Add delay to ensure the process is ready
         await this.waitUntilReady(rpcUrl);
         // return new Sandbox instance
-        return new Sandbox(rpcUrl, tmpDir, childProcess, rpcPortLock, netPortLock);
+        return new Sandbox(rpcUrl, tmpDir.path, childProcess, rpcPortLock, netPortLock);
     }
     /**
      * Destroys the running sandbox environment by:

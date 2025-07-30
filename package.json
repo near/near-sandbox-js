@@ -51,6 +51,8 @@
     "*.js",
     "bin",
     "dist/*.ts",
-    "dist/*.js"
+    "dist/**/*.d.ts",
+    "dist/*.js",
+    "dist/**/*.js"
   ]
 }

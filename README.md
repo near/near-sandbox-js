@@ -33,87 +33,109 @@ Using npm:
 npm install --save-dev near-sandbox
 ```
 
-Using yarn:
-
-```bash
-yarn add --dev near-sandbox
-```
-
 ## Simple Testing Example
 
 Here's an example of how you might use NEAR Sandbox in a test with async/await:
 
 ```javascript
-const { startSandbox } = require("near-sandbox");
+const { Sandbox } = require("near-sandbox");
 
 (async () => {
   try {
     // Start a sandbox instance with default configuration.
-    const sandbox = await startSandbox();
+    const sandbox = await Sandbox.start({});
 
     // Your test code here.
     // You can interact with the sandbox via its RPC `sandbox.rpc` etc.
 
-    // Typically, the sandbox will automatically clean up when the process exits.
-    console.log(`Sandbox RPC available at: ${sandbox.rpc}`);
+    console.log(`Sandbox RPC available at: ${sandbox.rpcUrl}`);
+    // On the end of the working you need stop procces by 'tearDow()' function on sandbox object, there is optional parameter that allow clean up temp dir
+    await sandbox.tearDown();
   } catch (error) {
     console.error("Error starting sandbox:", error);
   }
 })();
 ```
 
+You can find more and detailed examples in `examples/`
+
 ## Features
 
 - **Easy sandbox startup:** Start a local NEAR node with default or custom configuration.
 - **Version selection:** Download and run a specific NEAR Sandbox version.
-- **Custom configuration:** Adjust settings such as genesis parameters or network configurations.
+- **Custom configuration:** Adjust settings such as genesis parameters or network configurations. Add your own accounts as TLA to node.
 - **Automatic binary management:** Automatically downloads and manages the NEAR Sandbox binary if not already present.
 - **RPC access:** Access the sandbox node's RPC endpoint for interacting with your local network.
-- **Environment variable configuration:** Customize binary source, logging, timeouts, and more through environment variables.
+- **Environment variable configuration:** Customize binary source, timeouts, and more through environment variables.
 
 ### Starting a Sandbox
 
 You can start a sandbox with default settings:
 
 ```javascript
-const { startSandbox } = require("near-sandbox");
+const { Sandbox } = require("near-sandbox");
 
 (async () => {
-  const sandbox = await startSandbox();
+  const sandbox = await Sandbox.start({});
   // Use sandbox.rpc to interact with the local NEAR node.
+  await sandbox.tearDown();
+  // stop sandbox after using
 })();
 ```
 
 Or, you can specify a particular version:
 
 ```javascript
-const { startSandboxWithVersion } = require("near-sandbox");
+const { Sandbox } = require("near-sandbox");
 
 (async () => {
-  const sandbox = await startSandboxWithVersion("2.6.3");
+  const sandbox = await Sandbox.start({ version: "2.6.3" });
   // Use `sandbox.rpc` for your further interactions.
+  await sandbox.tearDown();
+  // stop sandbox after using
 })();
 ```
 
 Or configure the sandbox with custom settings:
 
 ```javascript
-const { startSandboxWithConfig } = require("near-sandbox");
+const { Sandbox } = require("near-sandbox");
 
 (async () => {
+  // Define your custom configuration here with interface `SandboxConfig`
   const config = {
-    // Define your custom configuration here.
-    network: { trustedStunServers: [] },
-    // Additional custom settings can be added.
+    rpcPort: rpcPort,
   };
-  const sandbox = await startSandboxWithConfig(config);
+  const sandbox = await Sandbox.start({ config: config });
+
+  await sandbox.tearDown();
 })();
 ```
+
+### CLI using
+
+- Initialize the Sandbox node
+
+      near-sandbox --home /tmp/near-sandbox init
+
+* Run it
+
+      near-sandbox --home /tmp/near-sandbox run
+  by default it is running on `http:/127.0.0.1:3030`
+
+* Stop the sandox node
+
+      rm -rf /tmp/near-sandbox
+
+To find out other things you can do:
+
+    near-sandbox --help
 
 ### Automatic Binary Management
 
 - On sandbox startup, the appropriate binary for your platform is automatically downloaded if not found locally.
-- The sandbox process runs in the background, and is automatically terminated upon cleanup.
+- It will be saved in dir bin/ inside lib(node_modules)
+- The sandbox process runs in the background, and is terminated while running tearDown().
 
 ## Environment Variables
 
@@ -121,4 +143,7 @@ Customize sandbox behavior using the following environment variables:
 
 - `SANDBOX_ARTIFACT_URL`: Specify an alternative URL for downloading the `near-sandbox` binary.
 - `NEAR_SANDBOX_BIN_PATH`: Use a custom-built `near-sandbox` binary instead of the default.
-- `NEAR_ENABLE_SANDBOX_LOG`: Set to `1` to enable sandbox logging, useful for debugging.
+- `DIR_TO_DOWNLOAD_BINARY`: Specify direction where you want save Binary.
+- `NEAR_RPC_TIMEOUT_SECS`: Set the timeout (in seconds) for waiting for the sandbox to start (default: 10).
+- `NEAR_SANDBOX_MAX_PAYLOAD_SIZE`: Set maximum payload size for JSON RPC requests in bytes (default: 1GB).
+- `NEAR_SANDBOX_MAX_OPEN_FILES`: Set maximum number of open files (default: 3000).

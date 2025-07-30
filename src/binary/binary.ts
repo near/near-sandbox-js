@@ -160,7 +160,7 @@ export async function ensureBinWithVersion(version: string): Promise<string> {
     try {
         await pingBin(_binPath);
     } catch (error) {
-        await fs.rm(join(__dirname, "..", "..", "bin", `near-sandbox-${version}`), { recursive: true, force: true });
+        await fs.rm(join(process.cwd(), "bin", `near-sandbox-${version}`), { recursive: true, force: true });
         throw new TypedError(`Binary doesn't respond, probably is corrupted. Try re-downloading`,
             BinaryErrors.RunningFailed,
             error instanceof Error ? error : new Error(String(error))
