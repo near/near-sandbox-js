@@ -52,12 +52,14 @@ const { Sandbox } = require("near-sandbox");
     // On the end of the working you need stop procces by 'tearDow()' function on sandbox object, there is optional parameter that allow clean up temp dir
     await sandbox.tearDown();
   } catch (error) {
-    console.error("Error starting sandbox:", error);
+    console.error("Error during execution:", error);
+  } finally {
+    await sandbox.tearDown();
   }
 })();
 ```
 
-You can find more and detailed examples in `examples/`
+You can find more and detailed examples in [examples](examples/)
 
 ## Features
 
@@ -121,6 +123,7 @@ const { Sandbox } = require("near-sandbox");
 * Run it
 
       near-sandbox --home /tmp/near-sandbox run
+
   by default it is running on `http:/127.0.0.1:3030`
 
 * Stop the sandox node

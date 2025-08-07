@@ -30,13 +30,13 @@ export async function initConfigsToTmpWithVersion(version: string, tmpDir: Direc
 
 export async function runWithArgsAndVersion(
     version: string,
-    args: string[], 
+    args: string[],
     options: SpawnOptions = { stdio: [null, null, 'inherit'] }
 ): Promise<ChildProcess> {
     const binPath = await ensureBinWithVersion(version);
     return spawn(
         binPath,
         args,
-        options 
+        options
     );
 }
