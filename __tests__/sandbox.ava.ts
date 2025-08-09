@@ -7,6 +7,7 @@ import { GenesisAccount, SandboxConfig } from '../src/server/config';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { lock } from 'proper-lockfile';
+import got from 'got';
 
 test('Sandbox.start() returns a valid instance with default config and version', async (t) => {
     const sandbox = await Sandbox.start({});
@@ -68,7 +69,7 @@ test('Sandbox.tearDown() cleans up resources and unlocks ports', async t => {
         });
     }, { message: /EADDRINUSE/ });
 
-    await sandbox.tearDown(true);
+    await sandbox.tearDown();
     await t.notThrowsAsync(() => {
         return new Promise<void>((resolve, reject) => {
             server.once('error', reject);
@@ -82,6 +83,18 @@ test('Sandbox.tearDown() cleans up resources and unlocks ports', async t => {
     t.false(dirExistsAfter);
 });
 
+test('Sandbox.rpcUrl is not reachable after stoppage', async t => {
+    const sandbox = await Sandbox.start({});
+    const rpcUrl = sandbox.rpcUrl;
+
+    await sandbox.stop();
+    await t.throwsAsync(
+        () => got(rpcUrl + '/status', { throwHttpErrors: false }),
+        {
+            message: /ECONNREFUSED/,
+        }
+    );
+});
 test('Sandbox throws if provided rpcPort is already in use', async (t) => {
     const rpcPort = 3050;
 
