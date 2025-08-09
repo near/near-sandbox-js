@@ -5,7 +5,8 @@ import { join } from "path";
 import { tmpdir } from "os";
 import { lock } from 'proper-lockfile';
 import { TcpAndLockErrors, TypedError } from "../errors";
-
+import { spawnWithArgsAndVersion } from "../binary/binaryExecution";
+import { readFile } from "fs/promises";
 
 const DEFAULT_RPC_HOST = '127.0.0.1';
 
@@ -86,4 +87,41 @@ async function createLockFileForPort(port: number): Promise<string> {
     }
 
     return lockFilePath;
+}
+
+export async function dumpStateFromPath(pathToState: string): Promise<{
+    config: Record<string, unknown>;
+    genesis: Record<string, unknown>;
+    nodeKey: Record<string, unknown>;
+    validatorKey: Record<string, unknown>;
+}> {
+    await new Promise<void>(async (resolve, reject) => {
+        const proc = await spawnWithArgsAndVersion("2.6.5", ["--home", pathToState, "view-state", "dump-state", "--stream"]);
+        proc.on("error", reject);
+        proc.on("exit", (code) => {
+            if (code === 0) {
+                resolve();
+            } else {
+                reject(new Error(`Process exited with code ${code}`));
+            }
+        });
+    });
+
+    const [genesis, config, nodeKey, validatorKey, records] = await Promise.all([
+        readFile(join(pathToState, "output/genesis.json"), "utf-8").then(JSON.parse),
+        readFile(join(pathToState, "output/config.json"), "utf-8").then(JSON.parse),
+        readFile(join(pathToState, "output/node_key.json"), "utf-8").then(JSON.parse),
+        readFile(join(pathToState, "output/validator_key.json"), "utf-8").then(JSON.parse),
+        readFile(join(pathToState, "output/records.json"), "utf-8").then(JSON.parse)
+    ]);
+
+    if (!Array.isArray(genesis.records)) genesis.records = [];
+
+    genesis.records.push(...records);
+    return {
+        config,
+        genesis,
+        nodeKey,
+        validatorKey
+    };
 }

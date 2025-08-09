@@ -1,8 +1,8 @@
 import { dir, DirectoryResult } from "tmp-promise";
-import { initConfigsToTmpWithVersion, runWithArgsAndVersion } from "../binary/binaryExecution";
-import { SandboxConfig, setSandboxConfig, setSandboxGenesis } from "./config";
+import { initConfigsToTmpWithVersion, spawnWithArgsAndVersion } from "../binary/binaryExecution";
+import { overrideConfigs, SandboxConfig } from "./config";
 import { ChildProcess } from "child_process";
-import { acquireOrLockPort, rpcSocket } from "./sandboxUtils";
+import { acquireOrLockPort, dumpStateFromPath, rpcSocket } from "./sandboxUtils";
 import { unlock } from "proper-lockfile";
 import { rm } from "fs/promises";
 import { SandboxErrors, TypedError } from "../errors";
@@ -85,20 +85,36 @@ export class Sandbox {
         const rpcAddr = rpcSocket(rpcPort);
         const netAddr = rpcSocket(netPort);
         // set sandbox configs
-        await setSandboxGenesis(tmpDir.path, config);
-        await setSandboxConfig(tmpDir.path, config);
+        await overrideConfigs(tmpDir.path, config);
         // create options and args to spawn the process
         const options = ["--home", tmpDir.path, "run", "--rpc-addr", rpcAddr, "--network-addr", netAddr];
-        // Run sandbox with the specified version and arguments, get ChildProcess
-        const childProcess = await runWithArgsAndVersion(version, options);
+        // spawn sandbox with the specified version and arguments, get ChildProcess
+        const childProcess = await spawnWithArgsAndVersion(version, options);
 
         const rpcUrl = `http://${rpcAddr}`;
 
-        // Add delay to ensure the process is ready
+        // Ping rpcUrl to ensure the process is ready
         await this.waitUntilReady(rpcUrl);
 
-        // return new Sandbox instance
         return new Sandbox(rpcUrl, tmpDir.path, childProcess, rpcPortLock, netPortLock);
+    }
+
+    /**
+     * Dumps the current state of the sandbox environment.
+     * Parses next files from dumped dir: the genesis, records(that will merge to genesis), config, node_key, and validator_key.
+     *
+     * Returned files such as `genesis`, `nodeKey`, and `validatorKey` are intended to be used
+     * when running the sandbox with a specific state. These files contain the necessary configuration and keys
+     * to restore or replicate the sandbox environment.
+     * @returns An object containing the genesis, config, node key, and validator key as json files.
+     */
+    async dump(): Promise<{
+        config: Record<string, unknown>;
+        genesis: Record<string, unknown>;
+        nodeKey: Record<string, unknown>;
+        validatorKey: Record<string, unknown>;
+    }> {
+        return dumpStateFromPath(this.homeDir);
     }
     /**
      * Destroys the running sandbox environment by:
@@ -127,11 +143,10 @@ export class Sandbox {
                 errors.push(new Error("Failed to unlock port: " + result.reason));
             }
         });
-
+        await Promise.race([
+            new Promise(resolve => this.childProcess.once('exit', resolve))
+        ]);
         if (cleanup) {
-            await Promise.race([
-                new Promise(resolve => this.childProcess.once('exit', resolve))
-            ]);
             await rm(this.homeDir, { recursive: true, force: true }).catch(error => {
                 errors.push(new Error(`Failed to remove sandbox home directory: ${error}`));
             });

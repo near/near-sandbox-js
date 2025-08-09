@@ -28,7 +28,7 @@ export async function initConfigsToTmpWithVersion(version: string, tmpDir: Direc
     }
 }
 
-export async function runWithArgsAndVersion(
+export async function spawnWithArgsAndVersion(
     version: string,
     args: string[],
     options: SpawnOptions = { stdio: [null, null, 'inherit'] }
