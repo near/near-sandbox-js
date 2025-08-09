@@ -41,20 +41,17 @@ Here's an example of how you might use NEAR Sandbox in a test with async/await:
 const { Sandbox } = require("near-sandbox");
 
 (async () => {
+  // Start a sandbox instance with default configuration.
+  const sandbox = await Sandbox.start({});
   try {
-    // Start a sandbox instance with default configuration.
-    const sandbox = await Sandbox.start({});
-
     // Your test code here.
     // You can interact with the sandbox via its RPC `sandbox.rpc` etc.
-
     console.log(`Sandbox RPC available at: ${sandbox.rpcUrl}`);
-    // On the end of the working you need stop procces by 'tearDow()' function on sandbox object, there is optional parameter that allow clean up temp dir
-    await sandbox.tearDown();
   } catch (error) {
     console.error("Error during execution:", error);
   } finally {
-    await sandbox.tearDown();
+    // On the end of the working you need stop procces by 'tearDow()' that clear temporary dir or 'stop()' - just stop procces
+    await sandbox.stop();
   }
 })();
 ```
@@ -80,7 +77,7 @@ const { Sandbox } = require("near-sandbox");
 (async () => {
   const sandbox = await Sandbox.start({});
   // Use sandbox.rpc to interact with the local NEAR node.
-  await sandbox.tearDown();
+  await sandbox.stop();
   // stop sandbox after using
 })();
 ```
@@ -94,7 +91,7 @@ const { Sandbox } = require("near-sandbox");
   const sandbox = await Sandbox.start({ version: "2.6.3" });
   // Use `sandbox.rpc` for your further interactions.
   await sandbox.tearDown();
-  // stop sandbox after using
+  // tearDown sandbox after using that clear tmp dir
 })();
 ```
 
@@ -110,7 +107,7 @@ const { Sandbox } = require("near-sandbox");
   };
   const sandbox = await Sandbox.start({ config: config });
 
-  await sandbox.tearDown();
+  await sandbox.stop();
 })();
 ```
 
