@@ -15,29 +15,37 @@ import { NEAR } from '@near-js/tokens';
 
 test('create a new account and send tokens', async t => {
   const sandbox = await Sandbox.start({ config: { rpcPort: 3032 } });
-  const provider = new JsonRpcProvider({ url: sandbox.rpcUrl }) as Provider;
-  const keyPair = KeyPair.fromString(DEFAULT_PRIVATE_KEY);
-  t.is(sandbox.rpcUrl, 'http://127.0.0.1:3032');
+  try {
+    const provider = new JsonRpcProvider({ url: sandbox.rpcUrl }) as Provider;
+    const keyPair = KeyPair.fromString(DEFAULT_PRIVATE_KEY);
+    t.is(sandbox.rpcUrl, 'http://127.0.0.1:3032');
 
-  const account = new Account(
-    DEFAULT_ACCOUNT_ID,
-    provider,
-    new KeyPairSigner(keyPair)
-  );
-  const accountInfo = await account.getState();
-  t.is(accountInfo.balance.total, DEFAULT_BALANCE);
+    const account = new Account(
+      DEFAULT_ACCOUNT_ID,
+      provider,
+      new KeyPairSigner(keyPair)
+    );
+    const accountInfo = await account.getState();
+    t.is(accountInfo.balance.total, DEFAULT_BALANCE);
 
-  const newKeyPair = KeyPair.fromRandom("ED25519");
-  await account.createAccount(`dontcare.${DEFAULT_ACCOUNT_ID}`, newKeyPair.getPublicKey());
+    const newKeyPair = KeyPair.fromRandom("ED25519");
+    await account.createAccount(`dontcare.${DEFAULT_ACCOUNT_ID}`, newKeyPair.getPublicKey());
 
-  const newAccount = new Account(
-    "dontcare." + DEFAULT_ACCOUNT_ID,
-    new JsonRpcProvider({ url: sandbox.rpcUrl }) as Provider,
-    new KeyPairSigner(newKeyPair)
-  );
-  await account.transfer({ receiverId: newAccount.accountId, amount: NEAR.toUnits(100) });
+    const newAccount = new Account(
+      "dontcare." + DEFAULT_ACCOUNT_ID,
+      new JsonRpcProvider({ url: sandbox.rpcUrl }) as Provider,
+      new KeyPairSigner(newKeyPair)
+    );
+    await account.transfer({ receiverId: newAccount.accountId, amount: NEAR.toUnits(100) });
 
-  t.is((await newAccount.getState()).balance.total, NEAR.toUnits(100));
-
-  await sandbox.tearDown();
+    t.is((await newAccount.getState()).balance.total, NEAR.toUnits(100));
+  } catch (error) {
+    if (error instanceof Error) {
+      t.fail(`${error.message}\n${error.stack}`);
+    } else {
+      t.fail(String(error));
+    }
+  } finally {
+    await sandbox.tearDown();
+  }
 });

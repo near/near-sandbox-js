@@ -25,9 +25,18 @@ test('provide custom config with additional account', async t => {
         ],
     };
     const sandbox = await Sandbox.start({ config });
-    const provider = new JsonRpcProvider({ url: sandbox.rpcUrl });
-    const accountInfo = await provider.viewAccount("alice.near");
+    try {
+        const provider = new JsonRpcProvider({ url: sandbox.rpcUrl });
+        const accountInfo = await provider.viewAccount("alice.near");
 
-    t.is(accountInfo.amount, NEAR.toUnits(1000000));
-    await sandbox.tearDown();
+        t.is(accountInfo.amount, NEAR.toUnits(1000000));
+    } catch (error) {
+        if (error instanceof Error) {
+            t.fail(`${error.message}\n${error.stack}`);
+        } else {
+            t.fail(String(error));
+        }
+    } finally {
+        await sandbox.tearDown();
+    }
 });

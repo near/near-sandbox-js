@@ -116,47 +116,34 @@ export class Sandbox {
     }> {
         return dumpStateFromPath(this.homeDir);
     }
+
     /**
      * Destroys the running sandbox environment by:
-     * - Killing the child process
+     * - Killing the child process, waiting for it to exit
      * - Unlocking the previously locked ports
-     * - Optionally cleaning up the home directory
-     *
-     * @param cleanup If true, deletes the sandbox’s temp home directory.
-     *
-     * @throws {TypedError} if cleanup or shutdown fails partially or completely.
      */
-    async tearDown(cleanup: boolean = false): Promise<void> {
-        const errors: Error[] = [];
-        const success = this.childProcess.kill();
-
-        if (!success) {
-            errors.push(new Error("Failed to kill the child process"));
-        }
-
-        const unlockResults = await Promise.allSettled([
-            unlock(this.rpcPortLockPath),
-            unlock(this.netPortLockPath)
-        ]);
-        unlockResults.forEach(result => {
-            if (result.status === 'rejected') {
-                errors.push(new Error("Failed to unlock port: " + result.reason));
-            }
-        });
+    async stop(): Promise<void> {
+        this.childProcess.kill();
         await Promise.race([
             new Promise(resolve => this.childProcess.once('exit', resolve))
         ]);
-        if (cleanup) {
-            await rm(this.homeDir, { recursive: true, force: true }).catch(error => {
-                errors.push(new Error(`Failed to remove sandbox home directory: ${error}`));
-            });
-        }
-        if (errors.length > 0) {
-            const combined = errors.map(e => `- ${e.message}`).join("\n");
+        await Promise.allSettled([
+            unlock(this.rpcPortLockPath),
+            unlock(this.netPortLockPath)
+        ]);
+
+    }
+    /**
+     * Calls `stop()` to terminate the sandbox and then cleans up the home directory.
+     */
+    async tearDown(): Promise<void> {
+        await this.stop();
+        await rm(this.homeDir, { recursive: true, force: true }).catch(error => {
+
             throw new TypedError(`Sandbox teardown encountered errors`,
                 SandboxErrors.TearDownFailed,
-                new Error(combined));
-        }
+                error instanceof Error ? error : new Error(String(error)));
+        });
     }
 
     private static async initConfigsWithVersion(version: string): Promise<DirectoryResult> {
