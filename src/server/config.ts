@@ -28,7 +28,7 @@ export const DEFAULT_BALANCE = NEAR.toUnits(10000);
   * balance - The initial balance of the account in yoctoNEAR.
   */
 export class GenesisAccount {
-  accountId: string; 
+  accountId: string;
   publicKey: string;
   privateKey: string;
   balance: bigint;
@@ -118,8 +118,21 @@ export interface SandboxConfig {
   additionalConfig?: Record<string, any>;
   additionalGenesis?: Record<string, any>;
   additionalAccounts?: GenesisAccount[];
+  nodeKey?: Record<string, any>;
+  validatorKey?: Record<string, any>;
 }
 
+export async function overrideConfigs(homeDir: string, config?: SandboxConfig): Promise<void> {
+  await setSandboxGenesis(homeDir, config);
+
+  await setSandboxConfig(homeDir, config);
+  if (config?.nodeKey) {
+    await fs.writeFile(join(homeDir, "node_key.json"), JSON.stringify(config.nodeKey, null, 2), 'utf-8');
+  }
+  if (config?.validatorKey) {
+    await fs.writeFile(join(homeDir, 'validator_key.json'), JSON.stringify(config.validatorKey, null, 2), 'utf-8');
+  }
+}
 export async function setSandboxGenesis(
   homeDir: string,
   config?: SandboxConfig
