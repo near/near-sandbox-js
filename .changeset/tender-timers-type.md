@@ -3,16 +3,18 @@
 ---
 
 Implemented a high-level API (Sandbox) to start and stop a NEAR sandbox node with optional configuration.
-Use lib as CLI interface to init and run bin manualy.
+Keep CLI support to initialize and run the sandbox manually.
 
-Automatically downloads the specified or default NEAR binary version if not already present.
+Automatically downloads the NEAR binary (specified or default version).
 
 Supports:
 
-Custom genesis/accounts/config (merged on top of defaults).
+Custom genesis, accounts, and config.
 
-Safe port allocation via internal locking system.
+Safe port allocation via internal locking.
 
-Graceful teardown and cleanup (tearDown()).
+Graceful shutdown via stop() or teardown() with cleanup.
 
-Temporary home directory management
+Full chain dump via dump(), returning all config files (genesis, config, node_key, validator_key).
+
+Starting a sandbox with a prepared state by providing genesis, validator_key, and node_key. 

@@ -30,7 +30,7 @@ Install the package globally or as a development dependency:
 Using npm:
 
 ```bash
-npm install --save-dev near-sandbox
+pnpm install --save-dev near-sandbox
 ```
 
 ## Simple Testing Example
@@ -60,12 +60,13 @@ You can find more and detailed examples in [examples](examples/)
 
 ## Features
 
-- **Easy sandbox startup:** Start a local NEAR node with default or custom configuration.
+- **Easy sandbox startup:** Start a local NEAR node with Sandbox.start({}).
 - **Version selection:** Download and run a specific NEAR Sandbox version.
 - **Custom configuration:** Adjust settings such as genesis parameters or network configurations. Add your own accounts as TLA to node.
 - **Automatic binary management:** Automatically downloads and manages the NEAR Sandbox binary if not already present.
 - **RPC access:** Access the sandbox node's RPC endpoint for interacting with your local network.
 - **Environment variable configuration:** Customize binary source, timeouts, and more through environment variables.
+- **Dumping:** dump() the entire chain that return all config files(genesis, config, node_key, validator_key as Records). Genesis and key files can be used to start sandbox as params to run prepared state.
 
 ### Starting a Sandbox
 
@@ -134,8 +135,8 @@ To find out other things you can do:
 ### Automatic Binary Management
 
 - On sandbox startup, the appropriate binary for your platform is automatically downloaded if not found locally.
-- It will be saved in dir bin/ inside lib(node_modules)
-- The sandbox process runs in the background, and is terminated while running tearDown().
+- It will be saved in dir bin/ inside package.
+- The sandbox process runs in the background, and is terminated while calling stop() or tearDown().
 
 ## Environment Variables
 
@@ -145,6 +146,4 @@ Customize sandbox behavior using the following environment variables:
 - `NEAR_SANDBOX_BIN_PATH`: Use a custom-built `near-sandbox` binary instead of the default.
 - `DIR_TO_DOWNLOAD_BINARY`: Specify direction where you want save Binary.
 - `NEAR_RPC_TIMEOUT_SECS`: Set the timeout (in seconds) for waiting for the sandbox to start (default: 10).
-- `NEAR_SANDBOX_MAX_PAYLOAD_SIZE`: Set maximum payload size for JSON RPC requests in bytes (default: 1GB).
-- `NEAR_SANDBOX_MAX_OPEN_FILES`: Set maximum number of open files (default: 3000).
 - `NEAR_ENABLE_SANDBOX_LOG`: Set to `1` to enable sandbox logging of `near-sandbox` (helpful for debugging).
