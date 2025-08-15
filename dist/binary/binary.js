@@ -28,7 +28,6 @@ async function downloadBin(version) {
         url = (0, binaryUtils_1.AWSUrl)(version);
     }
     const dirToDownload = await (0, tmp_promise_1.dir)();
-    console.log(`Downloading binary from ${url} to ${dirToDownload.path}`);
     try {
         await pipeline(got_1.default.stream(url), new stream.PassThrough(), tar.x({ strip: 1, C: dirToDownload.path }));
         const pathToDownloadedFile = (0, path_1.join)(dirToDownload.path, "near-sandbox");

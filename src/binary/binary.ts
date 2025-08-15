@@ -26,7 +26,6 @@ export async function downloadBin(version: string): Promise<string> {
         url = AWSUrl(version);
     }
     const dirToDownload = await dir();
-    console.log(`Downloading binary from ${url} to ${dirToDownload.path}`);
     try {
         await pipeline(
             got.stream(url),
