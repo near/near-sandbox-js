@@ -15,10 +15,10 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DEFAULT_BALANCE = exports.DEFAULT_PRIVATE_KEY = exports.DEFAULT_PUBLIC_KEY = exports.DEFAULT_ACCOUNT_ID = exports.GenesisAccount = void 0;
-var config_1 = require("./server/config");
+var config_1 = require("./sandbox/config");
 Object.defineProperty(exports, "GenesisAccount", { enumerable: true, get: function () { return config_1.GenesisAccount; } });
 Object.defineProperty(exports, "DEFAULT_ACCOUNT_ID", { enumerable: true, get: function () { return config_1.DEFAULT_ACCOUNT_ID; } });
 Object.defineProperty(exports, "DEFAULT_PUBLIC_KEY", { enumerable: true, get: function () { return config_1.DEFAULT_PUBLIC_KEY; } });
 Object.defineProperty(exports, "DEFAULT_PRIVATE_KEY", { enumerable: true, get: function () { return config_1.DEFAULT_PRIVATE_KEY; } });
 Object.defineProperty(exports, "DEFAULT_BALANCE", { enumerable: true, get: function () { return config_1.DEFAULT_BALANCE; } });
-__exportStar(require("./server/Sandbox"), exports);
+__exportStar(require("./sandbox/Sandbox"), exports);

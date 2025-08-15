@@ -1,6 +1,6 @@
 import test from "ava";
 import { join } from "path";
-import { DEFAULT_NEAR_SANDBOX_VERSION, Sandbox } from "../src/server/Sandbox";
+import { DEFAULT_NEAR_SANDBOX_VERSION, Sandbox } from "../src/sandbox/Sandbox";
 import { TypedError } from "../src/errors";
 
 const TEST_BIN_DIR = join(__dirname, "..", "test_files");

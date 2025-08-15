@@ -4,8 +4,8 @@
 * Be careful to ensure that additional properties in your own configurations are correct.
  */
 import test from "ava";
-import { Sandbox } from "../src/server/Sandbox";
-import { SandboxConfig } from "../src/server/config";
+import { Sandbox } from "../src/sandbox/Sandbox";
+import { SandboxConfig } from "../src/sandbox/config";
 import { KeyPair } from "@near-js/crypto";
 import { NEAR } from "@near-js/tokens";
 import { JsonRpcProvider } from "@near-js/providers";

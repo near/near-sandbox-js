@@ -12,6 +12,7 @@ const proper_lockfile_1 = require("proper-lockfile");
 const fs = require("fs/promises");
 const child_process_1 = require("child_process");
 const errors_1 = require("../errors");
+const tmp_promise_1 = require("tmp-promise");
 const pipeline = (0, util_1.promisify)(stream.pipeline);
 async function downloadBin(version) {
     const existingFile = await checkForVersion(version);
@@ -26,12 +27,18 @@ async function downloadBin(version) {
     else {
         url = (0, binaryUtils_1.AWSUrl)(version);
     }
+    const dirToDownload = await (0, tmp_promise_1.dir)({ unsafeCleanup: true });
+    console.log(`Downloading binary from ${url} to ${dirToDownload.path}`);
     try {
-        await pipeline(got_1.default.stream(url), new stream.PassThrough(), tar.x({ strip: 1, C: await getDownloadPath(version) }));
+        await pipeline(got_1.default.stream(url), new stream.PassThrough(), tar.x({ strip: 1, C: dirToDownload.path }));
+        const pathToDownloadedFile = (0, path_1.join)(dirToDownload.path, "near-sandbox");
+        const destinationFilePath = (0, path_1.join)(await getDownloadPath(version), "near-sandbox");
+        await fs.rename(pathToDownloadedFile, destinationFilePath);
     }
     catch (error) {
         throw new errors_1.TypedError(`Failed to download binary. Check Url and version`, errors_1.BinaryErrors.DownloadFailed, error instanceof Error ? error : new Error(String(error)));
     }
+    //  TODO: move the binary to the bin directory
     const binPath = (0, path_1.join)(await getDownloadPath(version), "near-sandbox");
     return binPath;
 }
@@ -134,7 +141,6 @@ async function ensureBinWithVersion(version) {
         await pingBin(_binPath);
     }
     catch (error) {
-        await fs.rm((0, path_1.join)(process.cwd(), "bin", `near-sandbox-${version}`), { recursive: true, force: true });
         throw new errors_1.TypedError(`Binary doesn't respond, probably is corrupted. Try re-downloading`, errors_1.BinaryErrors.RunningFailed, error instanceof Error ? error : new Error(String(error)));
     }
     return _binPath;

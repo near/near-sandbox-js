@@ -5,5 +5,5 @@ export {
     DEFAULT_PUBLIC_KEY,
     DEFAULT_PRIVATE_KEY,
     DEFAULT_BALANCE
-} from './server/config';
-export * from './server/Sandbox';
+} from './sandbox/config';
+export * from './sandbox/Sandbox';

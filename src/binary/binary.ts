@@ -9,6 +9,7 @@ import { lock } from "proper-lockfile";
 import * as fs from "fs/promises";
 import { spawn } from "child_process";
 import { BinaryErrors, TcpAndLockErrors, TypedError } from "../errors";
+import { dir } from "tmp-promise";
 
 const pipeline = promisify(stream.pipeline);
 
@@ -24,13 +25,20 @@ export async function downloadBin(version: string): Promise<string> {
     } else {
         url = AWSUrl(version);
     }
-
+    const dirToDownload = await dir();
+    console.log(`Downloading binary from ${url} to ${dirToDownload.path}`);
     try {
         await pipeline(
             got.stream(url),
             new stream.PassThrough(),
-            tar.x({ strip: 1, C: await getDownloadPath(version) })
+            tar.x({ strip: 1, C: dirToDownload.path })
         );
+
+        const pathToDownloadedFile = join(dirToDownload.path, "near-sandbox");
+        const destinationFilePath = join(
+            await getDownloadPath(version),
+            "near-sandbox"
+        ); await fs.rename(pathToDownloadedFile, destinationFilePath);
 
     } catch (error) {
         throw new TypedError(`Failed to download binary. Check Url and version`,
@@ -160,7 +168,6 @@ export async function ensureBinWithVersion(version: string): Promise<string> {
     try {
         await pingBin(_binPath);
     } catch (error) {
-        await fs.rm(join(process.cwd(), "bin", `near-sandbox-${version}`), { recursive: true, force: true });
         throw new TypedError(`Binary doesn't respond, probably is corrupted. Try re-downloading`,
             BinaryErrors.RunningFailed,
             error instanceof Error ? error : new Error(String(error))

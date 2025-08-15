@@ -3,8 +3,8 @@ import { JsonRpcProvider } from "@near-js/providers";
 import { Account } from "@near-js/accounts";
 import { KeyPairSigner } from "@near-js/signers";
 import { KeyPair } from "@near-js/crypto";
-import { Sandbox } from '../src/server/Sandbox';
-import { DEFAULT_ACCOUNT_ID, DEFAULT_PRIVATE_KEY } from '../src/server/config';
+import { Sandbox } from '../src/sandbox/Sandbox';
+import { DEFAULT_ACCOUNT_ID, DEFAULT_PRIVATE_KEY } from '../src/sandbox/config';
 import { readFileSync } from 'fs';
 
 const test = anyTest as TestFn<{
@@ -49,12 +49,13 @@ test.before(async (t) => {
             methodName: "setValue",
             args: { value: "HARDCODED_VALUE" },
             gas: BigInt(3000000000000),
+            waitUntil: "FINAL", 
         });
-        const state = await newAccount.viewFunction({
-            contractId: newAccount.accountId,
-            methodName: "getValue",
-        });
-        t.is("HARDCODED_VALUE", state);
+        const state = await provider.callFunction("alice.sandbox", "getValue", {});
+        if (typeof state === "undefined") {
+            throw new Error("Expected state to be a string");
+        }
+        t.is("HARDCODED_VALUE", state.toString());
 
         // Dump the final state for use in subsequent tests
         const { genesis, nodeKey, validatorKey } = await sandbox.dump();
@@ -100,27 +101,27 @@ test.afterEach.always(async (t) => {
 test('contract returns expected value', async (t) => {
     const provider = new JsonRpcProvider({ url: t.context.sandbox.rpcUrl });
 
-    const state2 = await provider.callFunction("alice.sandbox", "getValue", {});
-    if (typeof state2 === "undefined") {
+const state = await provider.callFunction("alice.sandbox", "getValue", {});
+    if (typeof state === "undefined") {
         throw new Error("Expected state to be a string");
     }
-    t.is("HARDCODED_VALUE", state2.toString());
+    t.is("HARDCODED_VALUE", state.toString());
 });
 
 test('set contract method and returns expected value', async (t) => {
-    console.log("Sandbox RPC URL in test:", t.context.sandbox.rpcUrl);
     await t.context.account.callFunction({
         contractId: "alice.sandbox",
         methodName: "setValue",
         args: { value: "New value in a new test" },
         gas: BigInt(3000000000000),
+        waitUntil: "FINAL",
     });
-    console.log(t.context.account.provider)
-    const state = await t.context.account.viewFunction({
-        contractId: "alice.sandbox",
-        methodName: "getValue",
-    });
-    t.is("New value in a new test", state);
+    const provider = new JsonRpcProvider({ url: t.context.sandbox.rpcUrl });
+    const state = await provider.callFunction("alice.sandbox", "getValue", {});
+    if (typeof state === "undefined") {
+        throw new Error("Expected state to be a string");
+    }
+    t.is("New value in a new test", state.toString());
 });
 
 test('fails if want to create account with existing name', async (t) => {

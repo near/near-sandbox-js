@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.inherit = exports.fileExists = exports.AWSUrl = void 0;
+exports.fileExists = exports.AWSUrl = void 0;
 const promises_1 = require("fs/promises");
 const os = require("os");
 const DEFAULT_NEAR_SANDBOX_VERSION = "2.6.5";
@@ -31,4 +31,3 @@ async function fileExists(filePath) {
     }
 }
 exports.fileExists = fileExists;
-exports.inherit = "inherit";

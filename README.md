@@ -147,3 +147,4 @@ Customize sandbox behavior using the following environment variables:
 - `NEAR_RPC_TIMEOUT_SECS`: Set the timeout (in seconds) for waiting for the sandbox to start (default: 10).
 - `NEAR_SANDBOX_MAX_PAYLOAD_SIZE`: Set maximum payload size for JSON RPC requests in bytes (default: 1GB).
 - `NEAR_SANDBOX_MAX_OPEN_FILES`: Set maximum number of open files (default: 3000).
+- `NEAR_ENABLE_SANDBOX_LOG`: Set to `1` to enable sandbox logging of `near-sandbox` (helpful for debugging).

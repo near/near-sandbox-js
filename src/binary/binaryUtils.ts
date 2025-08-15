@@ -30,5 +30,3 @@ export async function fileExists(filePath: string): Promise<boolean> {
     return false;
   }
 }
-
-export const inherit: "inherit" = "inherit";

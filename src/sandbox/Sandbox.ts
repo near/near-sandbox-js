@@ -1,8 +1,8 @@
-import { dir, DirectoryResult } from "tmp-promise";
+import { DirectoryResult } from "tmp-promise";
 import { initConfigsToTmpWithVersion, spawnWithArgsAndVersion } from "../binary/binaryExecution";
 import { overrideConfigs, SandboxConfig } from "./config";
 import { ChildProcess } from "child_process";
-import { acquireOrLockPort, dumpStateFromPath, rpcSocket } from "./sandboxUtils";
+import { acquireOrLockPort, createTmpDir, dumpStateFromPath, rpcSocket } from "./sandboxUtils";
 import { unlock } from "proper-lockfile";
 import { rm } from "fs/promises";
 import { SandboxErrors, TypedError } from "../errors";
@@ -87,9 +87,9 @@ export class Sandbox {
         // set sandbox configs
         await overrideConfigs(tmpDir.path, config);
         // create options and args to spawn the process
-        const options = ["--home", tmpDir.path, "run", "--rpc-addr", rpcAddr, "--network-addr", netAddr];
+        const args = ["--home", tmpDir.path, "run", "--rpc-addr", rpcAddr, "--network-addr", netAddr];
         // spawn sandbox with the specified version and arguments, get ChildProcess
-        const childProcess = await spawnWithArgsAndVersion(version, options);
+        const childProcess = await spawnWithArgsAndVersion(version, args);
 
         const rpcUrl = `http://${rpcAddr}`;
 
@@ -147,7 +147,7 @@ export class Sandbox {
     }
 
     private static async initConfigsWithVersion(version: string): Promise<DirectoryResult> {
-        const tmpDir = await dir({ unsafeCleanup: true });
+        const tmpDir = await createTmpDir();
         await initConfigsToTmpWithVersion(version, tmpDir);
         return tmpDir;
     }

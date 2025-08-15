@@ -4,3 +4,4 @@ node_modules/
 builds
 test_files/
 .vscode/
+bin/

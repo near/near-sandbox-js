@@ -7,6 +7,7 @@ import { lock } from 'proper-lockfile';
 import { TcpAndLockErrors, TypedError } from "../errors";
 import { spawnWithArgsAndVersion } from "../binary/binaryExecution";
 import { readFile } from "fs/promises";
+import { dir } from "tmp-promise";
 
 const DEFAULT_RPC_HOST = '127.0.0.1';
 
@@ -124,4 +125,13 @@ export async function dumpStateFromPath(pathToState: string): Promise<{
         nodeKey,
         validatorKey
     };
+}
+
+export async function createTmpDir() {
+    const now = new Date();
+    const timestamp = `${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}_${String(now.getHours()).padStart(2, "0")}-${String(now.getMinutes()).padStart(2, "0")}`;
+    const random = Math.random().toString(36).substring(2, 8);
+    const name = `near-sandbox-${timestamp}-${random}`;
+
+    return dir({ unsafeCleanup: true, name });
 }
