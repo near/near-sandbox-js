@@ -25,11 +25,12 @@ test('Sandbox.start() accepts custom config and version', async (t) => {
     const rpcPort = 3030;
     const customConfig: SandboxConfig = {
         rpcPort: rpcPort,
-        additionalGenesis: { epoch_length: 100 },
+        additionalGenesis: {
+            epoch_length: 100, maxOpenFiles: 100
+        },
         additionalAccounts: [
             GenesisAccount.createRandom("alice.near", "1000"),
         ],
-        maxOpenFiles: 100
     };
     const sandbox = await Sandbox.start({ config: customConfig, version: '2.6.5' });
 

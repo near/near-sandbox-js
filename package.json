@@ -40,7 +40,7 @@
     "near-hello": "0.5.1"
   },
   "scripts": {
-    "test": "ava",
+    "test": "DEFAULT_FINALITY=optimistic ava",
     "build": "tsc",
     "changeset": "changeset",
     "release": "changeset publish"

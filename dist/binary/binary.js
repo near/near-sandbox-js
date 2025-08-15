@@ -27,7 +27,7 @@ async function downloadBin(version) {
     else {
         url = (0, binaryUtils_1.AWSUrl)(version);
     }
-    const dirToDownload = await (0, tmp_promise_1.dir)({ unsafeCleanup: true });
+    const dirToDownload = await (0, tmp_promise_1.dir)();
     console.log(`Downloading binary from ${url} to ${dirToDownload.path}`);
     try {
         await pipeline(got_1.default.stream(url), new stream.PassThrough(), tar.x({ strip: 1, C: dirToDownload.path }));
@@ -38,7 +38,6 @@ async function downloadBin(version) {
     catch (error) {
         throw new errors_1.TypedError(`Failed to download binary. Check Url and version`, errors_1.BinaryErrors.DownloadFailed, error instanceof Error ? error : new Error(String(error)));
     }
-    //  TODO: move the binary to the bin directory
     const binPath = (0, path_1.join)(await getDownloadPath(version), "near-sandbox");
     return binPath;
 }

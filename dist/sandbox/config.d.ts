@@ -42,8 +42,6 @@ export declare class GenesisAccount {
 export interface SandboxConfig {
     rpcPort?: number;
     netPort?: number;
-    maxPayloadSize?: number;
-    maxOpenFiles?: number;
     additionalConfig?: Record<string, any>;
     additionalGenesis?: Record<string, any>;
     additionalAccounts?: GenesisAccount[];

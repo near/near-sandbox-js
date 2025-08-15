@@ -128,20 +128,8 @@ async function setSandboxConfig(homeDir, config) {
     var _a, _b, _c, _d;
     // get NEAR_SANDBOX_MAX_PAYLOAD_SIZE and NEAR_SANDBOX_MAX_OPEN_FILES from config or environment variables
     // If not provided, use default values
-    const maxPayloadSize = (_b = (_a = config === null || config === void 0 ? void 0 : config.maxPayloadSize) !== null && _a !== void 0 ? _a : parseEnv("NEAR_SANDBOX_MAX_PAYLOAD_SIZE", (s) => {
-        const num = parseInt(s);
-        if (isNaN(num)) {
-            throw new errors_1.TypedError(`Invalid NEAR_SANDBOX_MAX_PAYLOAD_SIZE type`, errors_1.SandboxErrors.InvalidConfig);
-        }
-        return num;
-    })) !== null && _b !== void 0 ? _b : 1024 * 1024 * 1024;
-    const maxOpenFiles = (_d = (_c = config === null || config === void 0 ? void 0 : config.maxOpenFiles) !== null && _c !== void 0 ? _c : parseEnv("NEAR_SANDBOX_MAX_OPEN_FILES", (s) => {
-        const num = parseInt(s);
-        if (isNaN(num)) {
-            throw new errors_1.TypedError(`Invalid NEAR_SANDBOX_MAX_OPEN_FILES type`, errors_1.SandboxErrors.InvalidConfig);
-        }
-        return num;
-    })) !== null && _d !== void 0 ? _d : 3000;
+    const maxPayloadSize = (_b = (_a = config === null || config === void 0 ? void 0 : config.additionalGenesis) === null || _a === void 0 ? void 0 : _a["maxPayloadSize"]) !== null && _b !== void 0 ? _b : 1024 * 1024 * 1024;
+    const maxOpenFiles = (_d = (_c = config === null || config === void 0 ? void 0 : config.additionalGenesis) === null || _c === void 0 ? void 0 : _c["maxOpenFiles"]) !== null && _d !== void 0 ? _d : 3000;
     // create a json with these values
     let newJsonConfig = {
         rpc: {
@@ -221,12 +209,6 @@ async function saveAccountsKeys(homeDir, additionalAccountsWithDefault) {
         const keyContent = JSON.stringify(keyJson, null, 2);
         await fs.writeFile(filePath, keyContent, 'utf-8');
     }
-}
-function parseEnv(key, parser) {
-    const raw = process.env[key];
-    if (raw === undefined || raw.trim() === '')
-        return undefined;
-    return parser(raw.trim());
 }
 async function overwriteSandboxConfigJson(homeDir, jsonConfig) {
     const sandboxPath = (0, path_1.join)(homeDir, 'config.json');

@@ -104,17 +104,15 @@ export class GenesisAccount {
  * This interface allows customization of the sandbox's behavior.
  * @property rpcPort - Port that RPC will be bound to. Will be picked randomly if not set.
  * @property netPort - Port that the network will be bound to. Will be picked randomly if not set.
- * @property maxPayloadSize - Maximum payload size for JSON RPC requests in bytes (default: 1GB).
- * @property maxOpenFiles - Maximum number of open files (default: 3000).
  * @property additionalConfig - Additional JSON configuration to merge with the default config. Ensure that the additional properties are correct.
  * @property additionalGenesis - Additional genesis parameters to modify the genesis.json.
  * @property additionalAccounts - Additional accounts to be passed in the sandbox genesis.
+ * @property nodeKey - Node key to be used by the sandbox node. If not provided, a default key will be used. Should match up with node key in genesis.json.
+ * @property validatorKey - Validator key to be used by the validator. Should match up with validator key in genesis.json.
  */
 export interface SandboxConfig {
   rpcPort?: number;
   netPort?: number;
-  maxPayloadSize?: number;
-  maxOpenFiles?: number;
   additionalConfig?: Record<string, any>;
   additionalGenesis?: Record<string, any>;
   additionalAccounts?: GenesisAccount[];
@@ -152,26 +150,11 @@ export async function setSandboxConfig(homeDir: string, config?: SandboxConfig):
   // get NEAR_SANDBOX_MAX_PAYLOAD_SIZE and NEAR_SANDBOX_MAX_OPEN_FILES from config or environment variables
   // If not provided, use default values
   const maxPayloadSize =
-    config?.maxPayloadSize ??
-    parseEnv<number>("NEAR_SANDBOX_MAX_PAYLOAD_SIZE", (s) => {
-      const num = parseInt(s);
-      if (isNaN(num)) {
-        throw new TypedError(`Invalid NEAR_SANDBOX_MAX_PAYLOAD_SIZE type`, SandboxErrors.InvalidConfig);
-      }
-      return num;
-    }) ??
+    config?.additionalGenesis?.["maxPayloadSize"] ??
     1024 * 1024 * 1024;
 
   const maxOpenFiles =
-    config?.maxOpenFiles ??
-    parseEnv<number>("NEAR_SANDBOX_MAX_OPEN_FILES", (s) => {
-      const num = parseInt(s);
-      if (isNaN(num)) {
-        throw new TypedError(`Invalid NEAR_SANDBOX_MAX_OPEN_FILES type`, SandboxErrors.InvalidConfig);
-      }
-      return num;
-    }) ??
-    3000;
+    config?.additionalGenesis?.["maxOpenFiles"] ?? 3000;
 
   // create a json with these values
   let newJsonConfig: Record<string, any> = {
@@ -268,12 +251,6 @@ async function saveAccountsKeys(homeDir: string, additionalAccountsWithDefault: 
   }
 }
 
-function parseEnv<T>(key: string, parser: (value: string) => T | undefined): T | undefined {
-  const raw = process.env[key];
-  if (raw === undefined || raw.trim() === '') return undefined;
-  return parser(raw.trim());
-
-}
 async function overwriteSandboxConfigJson(homeDir: string, jsonConfig: Record<string, any>) {
   const sandboxPath = join(homeDir, 'config.json');
   const sandboxRaw = await fs.readFile(sandboxPath, 'utf-8');
