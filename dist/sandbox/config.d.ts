@@ -33,11 +33,11 @@ export declare class GenesisAccount {
  * This interface allows customization of the sandbox's behavior.
  * @property rpcPort - Port that RPC will be bound to. Will be picked randomly if not set.
  * @property netPort - Port that the network will be bound to. Will be picked randomly if not set.
- * @property maxPayloadSize - Maximum payload size for JSON RPC requests in bytes (default: 1GB).
- * @property maxOpenFiles - Maximum number of open files (default: 3000).
  * @property additionalConfig - Additional JSON configuration to merge with the default config. Ensure that the additional properties are correct.
  * @property additionalGenesis - Additional genesis parameters to modify the genesis.json.
  * @property additionalAccounts - Additional accounts to be passed in the sandbox genesis.
+ * @property nodeKey - Node key to be used by the sandbox node. If not provided, a default key will be used. Should match up with node key in genesis.json.
+ * @property validatorKey - Validator key to be used by the validator. Should match up with validator key in genesis.json.
  */
 export interface SandboxConfig {
     rpcPort?: number;
