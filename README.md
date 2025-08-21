@@ -124,7 +124,7 @@ const { Sandbox } = require("near-sandbox");
 
   by default it is running on `http:/127.0.0.1:3030`
 
-* Stop the sandox node
+* Stop the sandox node. Once you're finished using the sandbox node you can stop it by using <kbd>Ctrl</kbd><kbd>C</kbd>. To clean up the data it generates:
 
       rm -rf /tmp/near-sandbox
 
