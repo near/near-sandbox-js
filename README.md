@@ -50,8 +50,8 @@ const { Sandbox } = require("near-sandbox");
   } catch (error) {
     console.error("Error during execution:", error);
   } finally {
-    // On the end of the working you need stop procces by 'tearDow()' that clear temporary dir or 'stop()' - just stop procces
-    await sandbox.stop();
+    // Stop the sandbox and clean up any files that were created. Note, if you want to persist the sandbox network state and just stop the node, use `stop()` method.
+    await sandbox.tearDown();
   }
 })();
 ```
@@ -78,8 +78,7 @@ const { Sandbox } = require("near-sandbox");
 (async () => {
   const sandbox = await Sandbox.start({});
   // Use sandbox.rpc to interact with the local NEAR node.
-  await sandbox.stop();
-  // stop sandbox after using
+  await sandbox.tearDown();
 })();
 ```
 
@@ -92,7 +91,6 @@ const { Sandbox } = require("near-sandbox");
   const sandbox = await Sandbox.start({ version: "2.6.3" });
   // Use `sandbox.rpc` for your further interactions.
   await sandbox.tearDown();
-  // tearDown sandbox after using that clear tmp dir
 })();
 ```
 
@@ -108,7 +106,7 @@ const { Sandbox } = require("near-sandbox");
   };
   const sandbox = await Sandbox.start({ config: config });
 
-  await sandbox.stop();
+  await sandbox.tearDown();
 })();
 ```
 
@@ -135,8 +133,8 @@ To find out other things you can do:
 ### Automatic Binary Management
 
 - On sandbox startup, the appropriate binary for your platform is automatically downloaded if not found locally.
-- It will be saved in dir bin/ inside package.
-- The sandbox process runs in the background, and is terminated while calling stop() or tearDown().
+- It will be saved in `bin` directory inside package (usually located inside `node_modules` folder of the project).
+- The sandbox process runs in the background, and can be terminated by calling `stop()` or `tearDown()` methods.
 
 ## Environment Variables
 
