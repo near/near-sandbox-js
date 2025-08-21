@@ -131,9 +131,7 @@ class Sandbox {
      */
     async stop() {
         this.childProcess.kill();
-        await Promise.race([
-            new Promise(resolve => this.childProcess.once('exit', resolve))
-        ]);
+        await new Promise(resolve => this.childProcess.once('exit', resolve));
         await Promise.allSettled([
             (0, proper_lockfile_1.unlock)(this.rpcPortLockPath),
             (0, proper_lockfile_1.unlock)(this.netPortLockPath)
@@ -150,7 +148,7 @@ class Sandbox {
     }
     static async initConfigsWithVersion(version) {
         const tmpDir = await (0, sandboxUtils_1.createTmpDir)();
-        await (0, binaryExecution_1.initConfigsToTmpWithVersion)(version, tmpDir);
+        await (0, binaryExecution_1.initConfigsWithVersion)(version, tmpDir.path);
         return tmpDir;
     }
     static async waitUntilReady(rpcUrl) {

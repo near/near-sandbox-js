@@ -1,5 +1,5 @@
 import { DirectoryResult } from "tmp-promise";
-import { initConfigsToTmpWithVersion, spawnWithArgsAndVersion } from "../binary/binaryExecution";
+import { initConfigsWithVersion, spawnWithArgsAndVersion } from "../binary/binaryExecution";
 import { overrideConfigs, SandboxConfig } from "./config";
 import { ChildProcess } from "child_process";
 import { acquireOrLockPort, createTmpDir, dumpStateFromPath, rpcSocket } from "./sandboxUtils";
@@ -124,9 +124,8 @@ export class Sandbox {
      */
     async stop(): Promise<void> {
         this.childProcess.kill();
-        await Promise.race([
-            new Promise(resolve => this.childProcess.once('exit', resolve))
-        ]);
+
+        await new Promise(resolve => this.childProcess.once('exit', resolve));
         await Promise.allSettled([
             unlock(this.rpcPortLockPath),
             unlock(this.netPortLockPath)
@@ -148,7 +147,7 @@ export class Sandbox {
 
     private static async initConfigsWithVersion(version: string): Promise<DirectoryResult> {
         const tmpDir = await createTmpDir();
-        await initConfigsToTmpWithVersion(version, tmpDir);
+        await initConfigsWithVersion(version, tmpDir.path);
         return tmpDir;
     }
 

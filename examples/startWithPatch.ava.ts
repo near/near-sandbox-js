@@ -30,7 +30,6 @@ test.before(async (t) => {
 
         const newSecretKey = KeyPair.fromRandom("ED25519");
         await rootAccount.createAccount("alice.sandbox", newSecretKey.getPublicKey(), BigInt(10e24));
-        await new Promise(resolve => setTimeout(resolve, 3000)); // wait for the account to be created
 
         const newAccount = new Account(
             "alice.sandbox",
@@ -40,7 +39,7 @@ test.before(async (t) => {
 
         const result = await newAccount.deployContract(new Uint8Array(data));
         t.is(result.final_execution_status, "EXECUTED_OPTIMISTIC");
-        await new Promise(resolve => setTimeout(resolve, 3000)); // wait for the contract to be deployed
+        await new Promise(resolve => setTimeout(resolve, 2000)); // wait for the contract to be deployed
 
         const response = (await provider.viewContractCode(newAccount.accountId)).code;
         t.deepEqual(response, new Uint8Array(data));

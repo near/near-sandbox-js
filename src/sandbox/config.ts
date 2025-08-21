@@ -1,5 +1,4 @@
 import { NEAR } from "@near-js/tokens";
-import { KeyPair } from "@near-js/crypto";
 import { join } from "path";
 import { apply } from "json-merge-patch"
 import * as fs from "fs/promises";
@@ -55,48 +54,6 @@ export class GenesisAccount {
       DEFAULT_BALANCE
     );
   }
-
-  /**
-   * Creates a random genesis account with a unique account ID.
-   * The account ID is generated based on the current time and a random number.
-   * WARNING: Prefer using `createDefault` or defining 'GenesisAccount' from the scratch
-   *
-   * @param accountId Optional custom account ID, if not provided a random one will be generated.
-   * @param balance Optional initial balance for the account, defaults to DEFAULT_BALANCE.
-   * @returns A GenesisAccount instance with a random account ID and specified balance.
-   */
-  static createRandom(accountId?: string, balance?: string | number): GenesisAccount {
-    const finalAccountId = accountId ?? this._generateRandomAccountId();
-    const finalBalance =
-      balance !== undefined && balance !== null
-        ? NEAR.toUnits(balance)
-        : DEFAULT_BALANCE;
-    const keyPair = KeyPair.fromRandom('ed25519');
-    const publicKey = keyPair.getPublicKey().toString();
-    const privateKey = keyPair.toString();
-
-    return new GenesisAccount(
-      finalAccountId,
-      publicKey,
-      privateKey,
-      finalBalance
-    );
-  }
-
-  private static _generateRandomAccountId(): string {
-    const now = new Date();
-    const timeStr = [
-      now.getUTCHours(),
-      now.getUTCMinutes(),
-      now.getUTCSeconds()
-    ]
-      .map(unit => unit.toString().padStart(2, '0'))
-      .join('');
-
-    const randomNum = Math.floor(Math.random() * 0xFFFFFFFF);
-    return `dev-acc-${timeStr}-${randomNum}.sandbox`;
-  }
-
 }
 
 /**
@@ -106,7 +63,7 @@ export class GenesisAccount {
  * @property netPort - Port that the network will be bound to. Will be picked randomly if not set.
  * @property additionalConfig - Additional JSON configuration to merge with the default config. Ensure that the additional properties are correct.
  * @property additionalGenesis - Additional genesis parameters to modify the genesis.json.
- * @property additionalAccounts - Additional accounts to be passed in the sandbox genesis.
+ * @property additionalAccounts - Additional accounts to be passed in the sandbox genesis. By default, it will create a default account with 10,000 NEAR.
  * @property nodeKey - Node key to be used by the sandbox node. If not provided, a default key will be used. Should match up with node key in genesis.json.
  * @property validatorKey - Validator key to be used by the validator. Should match up with validator key in genesis.json.
  */

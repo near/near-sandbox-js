@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.setSandboxConfig = exports.setSandboxGenesis = exports.overrideConfigs = exports.GenesisAccount = exports.DEFAULT_BALANCE = exports.DEFAULT_PRIVATE_KEY = exports.DEFAULT_PUBLIC_KEY = exports.DEFAULT_ACCOUNT_ID = void 0;
 const tokens_1 = require("@near-js/tokens");
-const crypto_1 = require("@near-js/crypto");
 const path_1 = require("path");
 const json_merge_patch_1 = require("json-merge-patch");
 const fs = require("fs/promises");
@@ -67,37 +66,6 @@ class GenesisAccount {
      */
     static createDefault(accountId) {
         return new GenesisAccount(accountId !== null && accountId !== void 0 ? accountId : exports.DEFAULT_ACCOUNT_ID, exports.DEFAULT_PUBLIC_KEY, exports.DEFAULT_PRIVATE_KEY, exports.DEFAULT_BALANCE);
-    }
-    /**
-     * Creates a random genesis account with a unique account ID.
-     * The account ID is generated based on the current time and a random number.
-     * WARNING: Prefer using `createDefault` or defining 'GenesisAccount' from the scratch
-     *
-     * @param accountId Optional custom account ID, if not provided a random one will be generated.
-     * @param balance Optional initial balance for the account, defaults to DEFAULT_BALANCE.
-     * @returns A GenesisAccount instance with a random account ID and specified balance.
-     */
-    static createRandom(accountId, balance) {
-        const finalAccountId = accountId !== null && accountId !== void 0 ? accountId : this._generateRandomAccountId();
-        const finalBalance = balance !== undefined && balance !== null
-            ? tokens_1.NEAR.toUnits(balance)
-            : exports.DEFAULT_BALANCE;
-        const keyPair = crypto_1.KeyPair.fromRandom('ed25519');
-        const publicKey = keyPair.getPublicKey().toString();
-        const privateKey = keyPair.toString();
-        return new GenesisAccount(finalAccountId, publicKey, privateKey, finalBalance);
-    }
-    static _generateRandomAccountId() {
-        const now = new Date();
-        const timeStr = [
-            now.getUTCHours(),
-            now.getUTCMinutes(),
-            now.getUTCSeconds()
-        ]
-            .map(unit => unit.toString().padStart(2, '0'))
-            .join('');
-        const randomNum = Math.floor(Math.random() * 0xFFFFFFFF);
-        return `dev-acc-${timeStr}-${randomNum}.sandbox`;
     }
 }
 exports.GenesisAccount = GenesisAccount;

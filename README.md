@@ -144,6 +144,6 @@ Customize sandbox behavior using the following environment variables:
 
 - `SANDBOX_ARTIFACT_URL`: Specify an alternative URL for downloading the `near-sandbox` binary.
 - `NEAR_SANDBOX_BIN_PATH`: Use a custom-built `near-sandbox` binary instead of the default.
-- `DIR_TO_DOWNLOAD_BINARY`: Specify direction where you want save Binary.
+- `DIR_TO_DOWNLOAD_BINARY`: Specify direction where you want save Binary. The default is /bin within the package
 - `NEAR_RPC_TIMEOUT_SECS`: Set the timeout (in seconds) for waiting for the sandbox to start (default: 10).
 - `NEAR_ENABLE_SANDBOX_LOG`: Set to `1` to enable sandbox logging of `near-sandbox` (helpful for debugging).

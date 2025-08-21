@@ -1,15 +1,14 @@
-import { DirectoryResult } from "tmp-promise";
 import { fileExists } from "./binaryUtils";
 import { ChildProcess, spawn, StdioOptions } from "child_process";
 import { ensureBinWithVersion } from "./binary";
 import { join } from "path";
 import { TypedError } from "../errors";
 
-// initializes a sandbox with provided version and tmp directory
-export async function initConfigsToTmpWithVersion(version: string, tmpDir: DirectoryResult): Promise<void> {
+// initializes a sandbox with the specified version in the provided directory path
+export async function initConfigsWithVersion(version: string, dirPath: string): Promise<void> {
     const bin = await ensureBinWithVersion(version);
 
-    const result = spawn(bin, ["--home", tmpDir.path, "init", "--fast"], { stdio: [null, null, "pipe"] });
+    const result = spawn(bin, ["--home", dirPath, "init", "--fast"], { stdio: [null, null, "pipe"] });
     await new Promise<void>((resolve, reject) => {
         result.on("close", (code) => {
             if (code === 0) resolve();
@@ -23,9 +22,9 @@ export async function initConfigsToTmpWithVersion(version: string, tmpDir: Direc
     const expectedFiles = ["config.json", "genesis.json"];
 
     for (const filename of expectedFiles) {
-        const filePath = join(tmpDir.path, filename);
+        const filePath = join(dirPath, filename);
         if (await fileExists(filePath)) continue;
-        throw new Error(`Expected file "${filename}" was not created in ${tmpDir.path}`);
+        throw new Error(`Expected file "${filename}" was not created in ${dirPath}`);
     }
 }
 

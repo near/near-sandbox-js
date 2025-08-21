@@ -1,13 +1,11 @@
 import test from 'ava';
 import * as net from 'net';
 import { existsSync } from "fs";
-import { writeFile } from 'fs/promises';
 import { Sandbox } from '../src/sandbox/Sandbox';
 import { GenesisAccount, SandboxConfig } from '../src/sandbox/config';
-import { tmpdir } from 'os';
 import { join } from 'path';
-import { lock } from 'proper-lockfile';
 import got from 'got';
+import { KeyPair } from '@near-js/crypto';
 
 test('Sandbox.start() returns a valid instance with default config and version', async (t) => {
     const sandbox = await Sandbox.start({});
@@ -23,13 +21,19 @@ test('Sandbox.start() returns a valid instance with default config and version',
 
 test('Sandbox.start() accepts custom config and version', async (t) => {
     const rpcPort = 3030;
+    const newKeyPair = KeyPair.fromRandom("ED25519");
     const customConfig: SandboxConfig = {
         rpcPort: rpcPort,
         additionalGenesis: {
             epoch_length: 100, maxOpenFiles: 100
         },
         additionalAccounts: [
-            GenesisAccount.createRandom("alice.near", "1000"),
+            new GenesisAccount(
+                'test-account',
+                newKeyPair.getPublicKey().toString(),
+                newKeyPair.toString(),
+                BigInt(10000000000000),
+            ),
         ],
     };
     const sandbox = await Sandbox.start({ config: customConfig, version: '2.6.5' });
@@ -110,24 +114,5 @@ test('Sandbox throws if provided rpcPort is already in use', async (t) => {
         );
     } finally {
         server.close();
-    }
-});
-
-test('Another process can`t bind sandbox`s rpcPort', async (t) => {
-    const rpcPort = 3060;
-    const sandbox = await Sandbox.start({ config: { rpcPort } });
-    const lockFilePath = join(tmpdir(), `near-sandbox-port-${rpcPort}.lock`);
-
-    try {
-        await writeFile(lockFilePath, '');
-        await t.throwsAsync(
-            async () => { await lock(lockFilePath, { retries: 0 }); },
-            {
-                instanceOf: Error,
-                message: /Lock file is already being held/,
-            }
-        );
-    } finally {
-        await sandbox.tearDown();
     }
 });

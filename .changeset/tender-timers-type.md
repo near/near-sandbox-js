@@ -1,5 +1,5 @@
 ---
-"near-sandbox": major
+"near-sandbox": minor
 ---
 
 Implemented a high-level API (Sandbox) to start and stop a NEAR sandbox node with optional configuration.

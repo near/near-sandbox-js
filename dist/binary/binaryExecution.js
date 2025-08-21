@@ -1,15 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.spawnWithArgsAndVersion = exports.initConfigsToTmpWithVersion = void 0;
+exports.spawnWithArgsAndVersion = exports.initConfigsWithVersion = void 0;
 const binaryUtils_1 = require("./binaryUtils");
 const child_process_1 = require("child_process");
 const binary_1 = require("./binary");
 const path_1 = require("path");
 const errors_1 = require("../errors");
-// initializes a sandbox with provided version and tmp directory
-async function initConfigsToTmpWithVersion(version, tmpDir) {
+// initializes a sandbox with the specified version in the provided directory path
+async function initConfigsWithVersion(version, dirPath) {
     const bin = await (0, binary_1.ensureBinWithVersion)(version);
-    const result = (0, child_process_1.spawn)(bin, ["--home", tmpDir.path, "init", "--fast"], { stdio: [null, null, "pipe"] });
+    const result = (0, child_process_1.spawn)(bin, ["--home", dirPath, "init", "--fast"], { stdio: [null, null, "pipe"] });
     await new Promise((resolve, reject) => {
         result.on("close", (code) => {
             if (code === 0)
@@ -23,13 +23,13 @@ async function initConfigsToTmpWithVersion(version, tmpDir) {
     });
     const expectedFiles = ["config.json", "genesis.json"];
     for (const filename of expectedFiles) {
-        const filePath = (0, path_1.join)(tmpDir.path, filename);
+        const filePath = (0, path_1.join)(dirPath, filename);
         if (await (0, binaryUtils_1.fileExists)(filePath))
             continue;
-        throw new Error(`Expected file "${filename}" was not created in ${tmpDir.path}`);
+        throw new Error(`Expected file "${filename}" was not created in ${dirPath}`);
     }
 }
-exports.initConfigsToTmpWithVersion = initConfigsToTmpWithVersion;
+exports.initConfigsWithVersion = initConfigsWithVersion;
 async function spawnWithArgsAndVersion(version, args, stdio = ['ignore', 'ignore', 'pipe']) {
     var _a;
     const binPath = await (0, binary_1.ensureBinWithVersion)(version);
