@@ -13,8 +13,12 @@
   "license": "MIT",
   "private": false,
   "dependencies": {
+    "@near-js/tokens": "^2.2.2",
     "got": "^11.8.6",
-    "tar": "^6.2.0"
+    "json-merge-patch": "^1.0.2",
+    "proper-lockfile": "^4.1.2",
+    "tar": "^6.2.0",
+    "tmp-promise": "^3.0.3"
   },
   "devDependencies": {
     "@changesets/changelog-github": "0.4.6",
@@ -22,24 +26,34 @@
     "@commitlint/cli": "17.0.3",
     "@commitlint/config-conventional": "17.0.3",
     "@sindresorhus/tsconfig": "^2.0.0",
-    "@types/node": "^16.4.10",
+    "@types/json-merge-patch": "^1.0.0",
+    "@types/node": "20.0.0",
+    "@types/proper-lockfile": "^4.1.4",
     "@types/tar": "^4.0.5",
-    "ava": "3.15.0",
+    "ava": "6.2.0",
     "ts-node": "^10.1.0",
-    "typescript": "^4.3.5"
+    "typescript": "5.4.5",
+    "@near-js/accounts": "2.2.5",
+    "@near-js/signers": "2.2.5",
+    "@near-js/providers": "2.2.5",
+    "@near-js/crypto": "^2.2.2",
+    "near-hello": "0.5.1"
   },
   "scripts": {
-    "postinstall": "node ./install.js",
-    "preinstall": "node ./uninstall.js",
-    "test": "ava",
+    "test": "DEFAULT_FINALITY=optimistic ava",
     "build": "tsc",
     "changeset": "changeset",
     "release": "changeset publish"
+  },
+  "engines": {
+    "node": ">=16.9"
   },
   "files": [
     "*.js",
     "bin",
     "dist/*.ts",
-    "dist/*.js"
+    "dist/**/*.d.ts",
+    "dist/*.js",
+    "dist/**/*.js"
   ]
 }

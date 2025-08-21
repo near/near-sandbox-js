@@ -1,1 +1,2 @@
-yarn.lock -diff
+pnpm-lock.yaml -diff
+dist/** -diff

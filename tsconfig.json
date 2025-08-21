@@ -1,6 +1,6 @@
 {
   "extends": "@sindresorhus/tsconfig/tsconfig.json",
-  "include": ["src/*.ts"],
+  "include": ["src/*.ts", "src/**/*.ts"],
   "compilerOptions": {
     "outDir": "./dist",
     "module": "commonjs",

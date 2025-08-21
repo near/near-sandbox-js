@@ -4,8 +4,7 @@ const fs = require('fs');
 const path = require('path');
 
 const NEARCORE_REPO = 'near/nearcore';
-const GET_BINARY_TS_PATH = 'src/getBinary.ts';
-
+const BINARY_UTILS_TS_PATH = 'src/binary/binaryUtils.ts'
 async function makeRequest(url) {
     const response = await fetch(url);
     if (!response.ok) {
@@ -30,7 +29,7 @@ async function getLatestNearCoreVersion() {
 
 function getCurrentVersion() {
     try {
-        const getBinaryTsPath = path.join(process.cwd(), GET_BINARY_TS_PATH);
+        const getBinaryTsPath = path.join(process.cwd(), BINARY_UTILS_TS_PATH);
         const content = fs.readFileSync(getBinaryTsPath, 'utf8');
         const match = content.match(/DEFAULT_NEAR_SANDBOX_VERSION = "([^"]+)"/);
 
@@ -49,7 +48,7 @@ function getCurrentVersion() {
 
 function updateGetBinaryTs(newVersion) {
     try {
-        const getBinaryPath = path.join(process.cwd(), GET_BINARY_TS_PATH);
+        const getBinaryPath = path.join(process.cwd(), BINARY_UTILS_TS_PATH);
         let content = fs.readFileSync(getBinaryPath, 'utf8');
 
         content = content.replace(
@@ -58,7 +57,7 @@ function updateGetBinaryTs(newVersion) {
         );
 
         fs.writeFileSync(getBinaryPath, content, 'utf8');
-        console.log(`Updated ${GET_BINARY_TS_PATH} with version ${newVersion}`);
+        console.log(`Updated ${BINARY_UTILS_TS_PATH} with version ${newVersion}`);
     } catch (error) {
         console.error('Error updating getBinary.ts:', error.message);
         throw error;
