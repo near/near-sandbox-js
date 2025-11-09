@@ -8,7 +8,7 @@ import { rm } from "fs/promises";
 import { SandboxErrors, TypedError } from "../errors";
 import got from "got";
 
-export const DEFAULT_NEAR_SANDBOX_VERSION = "2.6.5";
+export const DEFAULT_NEAR_SANDBOX_VERSION = "2.9.0";
 
 interface StartParams {
     config?: SandboxConfig;

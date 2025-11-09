@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.fileExists = exports.AWSUrl = void 0;
 const promises_1 = require("fs/promises");
 const os = require("os");
-const DEFAULT_NEAR_SANDBOX_VERSION = "2.6.5";
+const DEFAULT_NEAR_SANDBOX_VERSION = "2.9.0";
 function getPlatform() {
     const type = os.type();
     const arch = os.arch();

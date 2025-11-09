@@ -97,7 +97,7 @@ export async function dumpStateFromPath(pathToState: string): Promise<{
     validatorKey: Record<string, unknown>;
 }> {
     await new Promise<void>(async (resolve, reject) => {
-        const proc = await spawnWithArgsAndVersion("2.6.5", ["--home", pathToState, "view-state", "dump-state", "--stream"]);
+        const proc = await spawnWithArgsAndVersion("2.9.0", ["--home", pathToState, "view-state", "dump-state", "--stream"]);
         proc.on("error", reject);
         proc.on("exit", (code) => {
             if (code === 0) {

@@ -80,7 +80,7 @@ async function createLockFileForPort(port) {
 }
 async function dumpStateFromPath(pathToState) {
     await new Promise(async (resolve, reject) => {
-        const proc = await (0, binaryExecution_1.spawnWithArgsAndVersion)("2.6.5", ["--home", pathToState, "view-state", "dump-state", "--stream"]);
+        const proc = await (0, binaryExecution_1.spawnWithArgsAndVersion)("2.9.0", ["--home", pathToState, "view-state", "dump-state", "--stream"]);
         proc.on("error", reject);
         proc.on("exit", (code) => {
             if (code === 0) {

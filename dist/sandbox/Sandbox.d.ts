@@ -1,5 +1,5 @@
 import { SandboxConfig } from "./config";
-export declare const DEFAULT_NEAR_SANDBOX_VERSION = "2.6.5";
+export declare const DEFAULT_NEAR_SANDBOX_VERSION = "2.9.0";
 interface StartParams {
     config?: SandboxConfig;
     version?: string;

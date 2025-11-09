@@ -8,7 +8,7 @@ const proper_lockfile_1 = require("proper-lockfile");
 const promises_1 = require("fs/promises");
 const errors_1 = require("../errors");
 const got_1 = require("got");
-exports.DEFAULT_NEAR_SANDBOX_VERSION = "2.6.5";
+exports.DEFAULT_NEAR_SANDBOX_VERSION = "2.9.0";
 /**
  * `Sandbox` provides an isolated, ephemeral NEAR blockchain environment for local testing.
  *

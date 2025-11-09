@@ -36,7 +36,7 @@ test('Sandbox.start() accepts custom config and version', async (t) => {
             ),
         ],
     };
-    const sandbox = await Sandbox.start({ config: customConfig, version: '2.6.5' });
+    const sandbox = await Sandbox.start({ config: customConfig, version: '2.9.0' });
 
     t.truthy(sandbox);
     t.is(sandbox.rpcUrl, `http://127.0.0.1:${rpcPort}`);

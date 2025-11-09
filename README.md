@@ -88,7 +88,7 @@ Or, you can specify a particular version:
 const { Sandbox } = require("near-sandbox");
 
 (async () => {
-  const sandbox = await Sandbox.start({ version: "2.6.3" });
+  const sandbox = await Sandbox.start({ version: "2.9.0" });
   // Use `sandbox.rpc` for your further interactions.
   await sandbox.tearDown();
 })();
