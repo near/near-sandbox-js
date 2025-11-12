@@ -38,7 +38,7 @@ test.before(async (t) => {
         );
 
         const result = await newAccount.deployContract(new Uint8Array(data));
-        t.is(result.final_execution_status, "EXECUTED_OPTIMISTIC");
+        t.is(result.final_execution_status, "FINAL");
         await new Promise(resolve => setTimeout(resolve, 2000)); // wait for the contract to be deployed
 
         const response = (await provider.viewContractCode(newAccount.accountId)).code;
