@@ -1,18 +1,9 @@
 {
   "extends": "@sindresorhus/tsconfig/tsconfig.json",
-  "include": ["src/*.ts", "src/**/*.ts", "__tests__/**/*.ts", "examples/**/*.ts"],
-  "exclude": ["node_modules"],
+  "include": ["src/*.ts", "src/**/*.ts"],
   "compilerOptions": {
     "outDir": "./dist",
     "module": "commonjs",
 		"target": "ES2022", // Node.js 20
-    "skipLibCheck": true,
-    "types": ["node"]
-  },
-  "ts-node": {
-    "compilerOptions": {
-      "module": "commonjs"
-    },
-    "transpileOnly": true
   }
 }
