@@ -19,7 +19,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
 
       - name: Run nearcore update script
         run: |
@@ -70,7 +70,7 @@ jobs:
         if: steps.check-changes.outputs.update_needed == 'true'
         uses: peter-evans/create-pull-request@v7
         with:
-          token: ${{ secrets.RELEASE_PLZ_GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           add-paths: |
             src/getBinary.ts
             .changeset/
@@ -86,7 +86,7 @@ jobs:
             - [Release Notes](https://github.com/near/nearcore/releases/tag/${{ steps.latest-version.outputs.latest_version }})
 
             ## Changes
-            
+
             - Updated `DEFAULT_NEAR_SANDBOX_VERSION` in `src/getBinary.ts`
             
             *This PR was automatically created by the Check Nearcore Release workflow.*
