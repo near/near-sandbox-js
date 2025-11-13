@@ -62,13 +62,18 @@ test('Sandbox.tearDown() cleans up resources and unlocks ports', async t => {
 
     const dirExistsBefore = existsSync(sandbox.homeDir);
     t.true(dirExistsBefore);
+
+    // Verify sandbox is running by checking the RPC endpoint
+    await got(`${sandbox.rpcUrl}/status`);
+
+    // Now try to bind to the same port - should fail since sandbox is using it
     await t.throwsAsync(() => {
         return new Promise<void>((resolve, reject) => {
             server.once('error', (err) => {
                 server.close();
                 reject(err);
             });
-            server.listen(rpcPort, () => {
+            server.listen(rpcPort, '127.0.0.1', () => {
                 server.close(() => resolve());
             });
         });
@@ -103,7 +108,12 @@ test('Sandbox.rpcUrl is not reachable after stoppage', async t => {
 test('Sandbox throws if provided rpcPort is already in use', async (t) => {
     const rpcPort = 3050;
 
-    const server = net.createServer().listen(rpcPort);
+    const server = net.createServer();
+
+    // Wait for server to start listening
+    await new Promise<void>((resolve) => {
+        server.listen(rpcPort, '127.0.0.1', () => resolve());
+    });
 
     try {
         await t.throwsAsync(
@@ -113,6 +123,6 @@ test('Sandbox throws if provided rpcPort is already in use', async (t) => {
             }
         );
     } finally {
-        server.close();
+        await new Promise<void>((resolve) => server.close(() => resolve()));
     }
 });
