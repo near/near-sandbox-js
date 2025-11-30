@@ -7,8 +7,10 @@ import { unlock } from "proper-lockfile";
 import { rm } from "fs/promises";
 import { SandboxErrors, TypedError } from "../errors";
 import got from "got";
+import { DEFAULT_NEAR_SANDBOX_VERSION } from "../constants";
 
-export const DEFAULT_NEAR_SANDBOX_VERSION = "2.6.5";
+// Re-export for backwards compatibility
+export { DEFAULT_NEAR_SANDBOX_VERSION };
 
 interface StartParams {
     config?: SandboxConfig;

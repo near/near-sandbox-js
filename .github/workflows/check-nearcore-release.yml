@@ -72,7 +72,7 @@ jobs:
         with:
           token: ${{ secrets.RELEASE_PLZ_GITHUB_TOKEN }}
           add-paths: |
-            src/getBinary.ts
+            src/constants.ts
             .changeset/
           commit-message: "Update nearcore version to ${{ steps.latest-version.outputs.latest_version }}"
           title: "Update nearcore version to ${{ steps.latest-version.outputs.latest_version }}"
@@ -87,7 +87,7 @@ jobs:
 
             ## Changes
 
-            - Updated `DEFAULT_NEAR_SANDBOX_VERSION` in `src/getBinary.ts`
+            - Updated `DEFAULT_NEAR_SANDBOX_VERSION` in `src/constants.ts`
             
             *This PR was automatically created by the Check Nearcore Release workflow.*
           base: main

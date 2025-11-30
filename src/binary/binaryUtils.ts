@@ -1,7 +1,6 @@
 import { stat} from "fs/promises";
 import * as os from "os";
-
-const DEFAULT_NEAR_SANDBOX_VERSION = "2.6.5";
+import { DEFAULT_NEAR_SANDBOX_VERSION } from "../constants";
 
 function getPlatform() {
     const type = os.type();  

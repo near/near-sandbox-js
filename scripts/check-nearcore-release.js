@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 
 const NEARCORE_REPO = 'near/nearcore';
-const BINARY_UTILS_TS_PATH = 'src/binary/binaryUtils.ts'
+const CONSTANTS_TS_PATH = 'src/constants.ts'
 async function makeRequest(url) {
     const response = await fetch(url);
     if (!response.ok) {
@@ -29,12 +29,12 @@ async function getLatestNearCoreVersion() {
 
 function getCurrentVersion() {
     try {
-        const getBinaryTsPath = path.join(process.cwd(), BINARY_UTILS_TS_PATH);
-        const content = fs.readFileSync(getBinaryTsPath, 'utf8');
+        const constantsTsPath = path.join(process.cwd(), CONSTANTS_TS_PATH);
+        const content = fs.readFileSync(constantsTsPath, 'utf8');
         const match = content.match(/DEFAULT_NEAR_SANDBOX_VERSION = "([^"]+)"/);
 
         if (!match) {
-            throw new Error('Could not find DEFAULT_NEAR_SANDBOX_VERSION in getBinary.ts');
+            throw new Error('Could not find DEFAULT_NEAR_SANDBOX_VERSION in constants.ts');
         }
 
         const version = match[1];
@@ -46,20 +46,20 @@ function getCurrentVersion() {
     }
 }
 
-function updateGetBinaryTs(newVersion) {
+function updateConstantsTs(newVersion) {
     try {
-        const getBinaryPath = path.join(process.cwd(), BINARY_UTILS_TS_PATH);
-        let content = fs.readFileSync(getBinaryPath, 'utf8');
+        const constantsPath = path.join(process.cwd(), CONSTANTS_TS_PATH);
+        let content = fs.readFileSync(constantsPath, 'utf8');
 
         content = content.replace(
             /DEFAULT_NEAR_SANDBOX_VERSION = "[^"]+"/,
             `DEFAULT_NEAR_SANDBOX_VERSION = "${newVersion}"`
         );
 
-        fs.writeFileSync(getBinaryPath, content, 'utf8');
-        console.log(`Updated ${BINARY_UTILS_TS_PATH} with version ${newVersion}`);
+        fs.writeFileSync(constantsPath, content, 'utf8');
+        console.log(`Updated ${CONSTANTS_TS_PATH} with version ${newVersion}`);
     } catch (error) {
-        console.error('Error updating getBinary.ts:', error.message);
+        console.error('Error updating constants.ts:', error.message);
         throw error;
     }
 }
@@ -78,7 +78,7 @@ async function main() {
 
         console.log(`\n🔄 Update needed: ${currentVersion} → ${latestVersion}\n`);
 
-        updateGetBinaryTs(latestVersion, releaseDate);
+        updateConstantsTs(latestVersion, releaseDate);
 
         console.log('\n✅ Files updated successfully. Changes will be detected by git status.');
     } catch (error) {
