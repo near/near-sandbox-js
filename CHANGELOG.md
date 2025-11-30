@@ -1,5 +1,16 @@
 # near-sandbox
 
+## 0.2.1
+
+### Patch Changes
+
+- 7337c90: Bumped Node.js used for CI to version 20 (#17)
+- 7337c90: Consolidated DEFAULT_NEAR_SANDBOX_VERSION constant (#18)
+- 7337c90: Replaced tsc with tsup for dual ESM/CJS builds (#20)
+- 7337c90: Enabled support for arm64 Linux target (#22)
+- 7337c90: update NEAR Sandbox to version 2.9.0 (#19)
+- 7337c90: update TypeScript and test configuration (#15)
+
 ## 0.2.0
 
 ### Minor Changes
