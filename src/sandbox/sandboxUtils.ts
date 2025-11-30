@@ -8,6 +8,7 @@ import { TcpAndLockErrors, TypedError } from "../errors";
 import { spawnWithArgsAndVersion } from "../binary/binaryExecution";
 import { readFile } from "fs/promises";
 import { dir } from "tmp-promise";
+import { DEFAULT_NEAR_SANDBOX_VERSION } from "../constants";
 
 const DEFAULT_RPC_HOST = '127.0.0.1';
 
@@ -97,7 +98,7 @@ export async function dumpStateFromPath(pathToState: string): Promise<{
     validatorKey: Record<string, unknown>;
 }> {
     await new Promise<void>(async (resolve, reject) => {
-        const proc = await spawnWithArgsAndVersion("2.6.5", ["--home", pathToState, "view-state", "dump-state", "--stream"]);
+        const proc = await spawnWithArgsAndVersion(DEFAULT_NEAR_SANDBOX_VERSION, ["--home", pathToState, "view-state", "dump-state", "--stream"]);
         proc.on("error", reject);
         proc.on("exit", (code) => {
             if (code === 0) {
