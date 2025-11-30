@@ -3,7 +3,15 @@
   "version": "0.2.0",
   "description": "CLI tool for testing NEAR smart contracts",
   "main": "dist/index.js",
+  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
   "bin": {
     "near-sandbox": "./run.js",
     "sandbox": "./run.js"
@@ -25,35 +33,34 @@
     "@changesets/cli": "2.24.4",
     "@commitlint/cli": "17.0.3",
     "@commitlint/config-conventional": "17.0.3",
+    "@near-js/accounts": "2.2.5",
+    "@near-js/crypto": "^2.2.2",
+    "@near-js/providers": "2.2.5",
+    "@near-js/signers": "2.2.5",
     "@sindresorhus/tsconfig": "^2.0.0",
     "@types/json-merge-patch": "^1.0.0",
     "@types/node": "20.0.0",
     "@types/proper-lockfile": "^4.1.4",
     "@types/tar": "^4.0.5",
     "ava": "6.2.0",
+    "near-hello": "0.5.1",
     "ts-node": "^10.1.0",
-    "typescript": "5.4.5",
-    "@near-js/accounts": "2.2.5",
-    "@near-js/signers": "2.2.5",
-    "@near-js/providers": "2.2.5",
-    "@near-js/crypto": "^2.2.2",
-    "near-hello": "0.5.1"
+    "tsup": "^8.5.1",
+    "tsx": "^4.20.6",
+    "typescript": "5.4.5"
   },
   "scripts": {
     "test": "DEFAULT_FINALITY=optimistic ava",
-    "build": "tsc",
+    "build": "tsup",
     "changeset": "changeset",
     "release": "changeset publish"
   },
   "engines": {
-    "node": ">=16.9"
+    "node": ">=20.0.0"
   },
   "files": [
     "*.js",
     "bin",
-    "dist/*.ts",
-    "dist/**/*.d.ts",
-    "dist/*.js",
-    "dist/**/*.js"
+    "dist"
   ]
 }
