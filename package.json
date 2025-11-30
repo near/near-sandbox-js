@@ -3,7 +3,15 @@
   "version": "0.2.0",
   "description": "CLI tool for testing NEAR smart contracts",
   "main": "dist/index.js",
+  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
   "bin": {
     "near-sandbox": "./run.js",
     "sandbox": "./run.js"
@@ -37,11 +45,13 @@
     "ava": "6.2.0",
     "near-hello": "0.5.1",
     "ts-node": "^10.1.0",
+    "tsup": "^8.5.1",
+    "tsx": "^4.20.6",
     "typescript": "5.4.5"
   },
   "scripts": {
     "test": "DEFAULT_FINALITY=optimistic ava",
-    "build": "tsc",
+    "build": "tsup",
     "changeset": "changeset",
     "release": "changeset publish"
   },
@@ -51,9 +61,6 @@
   "files": [
     "*.js",
     "bin",
-    "dist/*.ts",
-    "dist/**/*.d.ts",
-    "dist/*.js",
-    "dist/**/*.js"
+    "dist"
   ]
 }

@@ -7,14 +7,20 @@ const DEFAULT_NEAR_SANDBOX_VERSION = "2.6.5";
 function getPlatform() {
     const type = os.type();
     const arch = os.arch();
-    // Darwind x86_64 is not supported for quite some time :(
     if (type === "Linux" && arch === "x64") {
-        return [type, "x86_64"];
+        return ["Linux", "x86_64"];
     }
-    else if (type === "Darwin" && arch === "arm64") {
-        return [type, "arm64"];
+    if (type === "Linux" && arch === "arm64") {
+        return ["Linux", "aarch64"];
     }
-    throw new Error("Only linux-x86 and darwin-arm are supported");
+    // Darwind x86_64 is not supported for quite some time :(
+    if (type === "Darwin" && arch === "x64") {
+        throw new Error("Darwin x86_64 is not supported");
+    }
+    if (type === "Darwin" && arch === "arm64") {
+        return ["Darwin", "arm64"];
+    }
+    throw new Error(`Unsupported platform: ${type}-${arch}`);
 }
 function AWSUrl(version = DEFAULT_NEAR_SANDBOX_VERSION) {
     const [platform, arch] = getPlatform();
