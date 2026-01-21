@@ -1,5 +1,11 @@
 # near-sandbox
 
+## 0.2.3
+
+### Patch Changes
+
+- 1b8b4eb: Update nearcore version to 2.10.5
+
 ## 0.2.2
 
 ### Patch Changes
