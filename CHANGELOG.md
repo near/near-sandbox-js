@@ -1,5 +1,11 @@
 # near-sandbox
 
+## 0.2.6
+
+### Patch Changes
+
+- dfa0570: Update nearcore version to 2.11.1
+
 ## 0.2.5
 
 ### Patch Changes
