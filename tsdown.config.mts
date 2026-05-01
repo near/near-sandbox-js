@@ -2,7 +2,7 @@ import { defineConfig } from 'tsdown';
 
 const shared = {
   entry: ['src/index.ts', 'src/run.ts'],
-  target: 'node20',
+  target: 'node22',
   dts: true,
   sourcemap: true,
   clean: true,
