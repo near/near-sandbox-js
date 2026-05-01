@@ -7,10 +7,6 @@ on:
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
-permissions:
-  id-token: write  # Required for Trusted Pulishing to NPM
-  contents: read
-  
 jobs:
   release:
     name: Release
@@ -19,6 +15,7 @@ jobs:
       contents: write
       issues: write
       pull-requests: write
+      id-token: write  # Required for Trusted Pulishing to NPM
     environment: NPM
     steps:
       - name: Checkout Repo
