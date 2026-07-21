@@ -1,6 +1,6 @@
 {
   "name": "near-sandbox",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "CLI tool for testing NEAR smart contracts",
   "repository": {
     "type": "git",
