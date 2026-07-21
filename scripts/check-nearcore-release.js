@@ -31,7 +31,7 @@ function getCurrentVersion() {
   try {
     const constantsTsPath = path.join(process.cwd(), CONSTANTS_TS_PATH);
     const content = fs.readFileSync(constantsTsPath, 'utf8');
-    const match = content.match(/DEFAULT_NEAR_SANDBOX_VERSION = "([^"]+)"/);
+    const match = content.match(/DEFAULT_NEAR_SANDBOX_VERSION = ['"]([^'"]+)['"]/);
 
     if (!match) {
       throw new Error('Could not find DEFAULT_NEAR_SANDBOX_VERSION in constants.ts');
@@ -52,8 +52,8 @@ function updateConstantsTs(newVersion) {
     let content = fs.readFileSync(constantsPath, 'utf8');
 
     content = content.replace(
-      /DEFAULT_NEAR_SANDBOX_VERSION = "[^"]+"/,
-      `DEFAULT_NEAR_SANDBOX_VERSION = "${newVersion}"`,
+      /DEFAULT_NEAR_SANDBOX_VERSION = ['"][^'"]+['"]/,
+      `DEFAULT_NEAR_SANDBOX_VERSION = '${newVersion}'`,
     );
 
     fs.writeFileSync(constantsPath, content, 'utf8');
