@@ -157,16 +157,20 @@ export class Sandbox {
 
   private static async waitUntilReady(rpcUrl: string) {
     const timeoutSecs = parseInt(process.env['NEAR_RPC_TIMEOUT_SECS'] || '10');
-    const attempts = timeoutSecs * 2;
+    const deadline = Date.now() + timeoutSecs * 1000;
     let lastError: unknown = null;
-    for (let i = 0; i < attempts; i++) {
+    // A hanging request must not push the total wait past NEAR_RPC_TIMEOUT_SECS,
+    // so each attempt is bounded by whatever is left of the deadline.
+    for (let remaining = timeoutSecs * 1000; remaining > 0; remaining = deadline - Date.now()) {
       try {
         // Polled with `fetch` rather than `got`: on Node >= 26.7 a refused
         // connection makes got@11 raise "The `onCancel` handler was attached
         // after the promise settled" as an uncaught exception, which no
         // try/catch here can contain. The sandbox always refuses the first few
         // polls while it boots, so that crashed every run.
-        const response = await fetch(`${rpcUrl}/status`, { signal: AbortSignal.timeout(5000) });
+        const response = await fetch(`${rpcUrl}/status`, {
+          signal: AbortSignal.timeout(remaining),
+        });
         await response.body?.cancel();
         if (response.ok) {
           return;
