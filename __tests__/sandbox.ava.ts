@@ -1,7 +1,6 @@
 import { KeyPair } from '@near-js/crypto';
 import test from 'ava';
 import { existsSync } from 'fs';
-import got from 'got';
 import * as net from 'net';
 import { join } from 'path';
 import { GenesisAccount, Sandbox, type SandboxConfig } from '../src';
@@ -61,7 +60,8 @@ test('Sandbox.tearDown() cleans up resources and unlocks ports', async (t) => {
   t.true(dirExistsBefore);
 
   // Verify sandbox is running by checking the RPC endpoint
-  await got(`${sandbox.rpcUrl}/status`);
+  const status = await fetch(`${sandbox.rpcUrl}/status`);
+  t.true(status.ok);
 
   // Now try to bind to the same port - should fail since sandbox is using it
   await t.throwsAsync(
@@ -98,9 +98,10 @@ test('Sandbox.rpcUrl is not reachable after stoppage', async (t) => {
   const rpcUrl = sandbox.rpcUrl;
 
   await sandbox.stop();
-  await t.throwsAsync(() => got(rpcUrl + '/status', { throwHttpErrors: false }), {
-    message: /ECONNREFUSED/,
-  });
+  const error = (await t.throwsAsync(() =>
+    fetch(`${rpcUrl}/status`, { signal: AbortSignal.timeout(5000) }),
+  )) as (Error & { cause?: NodeJS.ErrnoException }) | undefined;
+  t.is(error?.cause?.code, 'ECONNREFUSED');
 });
 test('Sandbox throws if provided rpcPort is already in use', async (t) => {
   const rpcPort = 3050;

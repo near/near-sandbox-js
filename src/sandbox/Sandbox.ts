@@ -1,6 +1,5 @@
 import { ChildProcess } from 'child_process';
 import { rm } from 'fs/promises';
-import got from 'got';
 import { unlock } from 'proper-lockfile';
 import { DirectoryResult } from 'tmp-promise';
 import { initConfigsWithVersion, spawnWithArgsAndVersion } from '../binary/binaryExecution';
@@ -162,8 +161,14 @@ export class Sandbox {
     let lastError: unknown = null;
     for (let i = 0; i < attempts; i++) {
       try {
-        const response = await got(`${rpcUrl}/status`, { throwHttpErrors: false });
-        if (response.statusCode >= 200 && response.statusCode < 300) {
+        // Polled with `fetch` rather than `got`: on Node >= 26.7 a refused
+        // connection makes got@11 raise "The `onCancel` handler was attached
+        // after the promise settled" as an uncaught exception, which no
+        // try/catch here can contain. The sandbox always refuses the first few
+        // polls while it boots, so that crashed every run.
+        const response = await fetch(`${rpcUrl}/status`, { signal: AbortSignal.timeout(5000) });
+        await response.body?.cancel();
+        if (response.ok) {
           return;
         }
       } catch (error) {
