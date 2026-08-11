@@ -1,5 +1,12 @@
 # near-sandbox
 
+## 0.3.3
+
+### Patch Changes
+
+- cb894de: Update nearcore version to 2.13.3
+- 4370c13: Poll the sandbox RPC with `fetch` instead of `got`, fixing startup on Node >= 26.7 where a refused connection crashed the process with an uncaught error.
+
 ## 0.3.2
 
 ### Patch Changes
