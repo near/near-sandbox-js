@@ -61,6 +61,7 @@ test('Sandbox.tearDown() cleans up resources and unlocks ports', async (t) => {
 
   // Verify sandbox is running by checking the RPC endpoint
   const status = await fetch(`${sandbox.rpcUrl}/status`);
+  await status.body?.cancel();
   t.true(status.ok);
 
   // Now try to bind to the same port - should fail since sandbox is using it
