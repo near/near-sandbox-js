@@ -1,0 +1,42 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "enabledManagers": ["custom.regex"],
+  "branchPrefix": "chore/renovate-",
+  "semanticCommits": "enabled",
+  "dependencyDashboard": true,
+  // The renovate-changeset workflow amends a changeset into Renovate's commit
+  // (committer becomes github-actions); make sure Renovate never treats the
+  // branch as modified by someone else.
+  "gitIgnoredAuthors": ["41898282+github-actions[bot]@users.noreply.github.com"],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Track stable nearcore releases used by the default sandbox",
+      "managerFilePatterns": ["/^src\\/constants\\.ts$/"],
+      // Accepts single or double quotes so a formatter change can't silently
+      // break detection (this is what killed the previous update script).
+      "matchStrings": [
+        "DEFAULT_NEAR_SANDBOX_VERSION = ['\"](?<currentValue>[^'\"]+)['\"]"
+      ],
+      "depNameTemplate": "near/nearcore",
+      "datasourceTemplate": "github-releases",
+      "versioningTemplate": "semver"
+    }
+  ],
+  "packageRules": [
+    {
+      "description": "Update the default sandbox only after stable release artifacts have had time to publish",
+      "matchManagers": ["custom.regex"],
+      "matchPackageNames": ["near/nearcore"],
+      "allowedVersions": "/^\\d+\\.\\d+\\.\\d+$/",
+      "minimumReleaseAge": "3 hours",
+      "internalChecksFilter": "strict",
+      "semanticCommitType": "chore",
+      "semanticCommitScope": "deps",
+      "commitMessageTopic": "nearcore sandbox",
+      "labels": ["automated", "nearcore-update", "dependencies"],
+      "automerge": false
+    }
+  ]
+}

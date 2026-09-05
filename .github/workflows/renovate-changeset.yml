@@ -1,0 +1,52 @@
+# Adds a changeset to Renovate's nearcore-bump branches so `changeset publish`
+# cuts a release after merge. The changeset is amended into Renovate's own
+# commit (author stays renovate[bot]), so Renovate keeps managing the branch.
+# Pattern borrowed from backstage/backstage's sync_renovate-changesets.yml.
+name: Add changeset to Renovate PRs
+
+on:
+  push:
+    branches:
+      - 'chore/renovate-**'
+
+jobs:
+  changeset:
+    runs-on: ubuntu-latest
+    # Only react to pushes made by Renovate itself. Our own force-push below
+    # is made by the service account, so it cannot retrigger this job.
+    if: github.actor == 'renovate[bot]'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          # PAT, not GITHUB_TOKEN: pushes made with GITHUB_TOKEN don't trigger
+          # workflows, so the Tests run would never happen on the final commit.
+          token: ${{ secrets.NEARPROTOCOL_CI_PR_ACCESS }}
+
+      - name: Generate changeset and amend Renovate's commit
+        run: |
+          if git diff --name-only HEAD~1 | grep -q '^\.changeset/'; then
+            echo "Changeset already present, skipping"
+            exit 0
+          fi
+          if ! git diff --name-only HEAD~1 | grep -q '^src/constants\.ts$'; then
+            echo "No src/constants.ts change, skipping"
+            exit 0
+          fi
+
+          VERSION=$(grep -oP "DEFAULT_NEAR_SANDBOX_VERSION = ['\"]\K[^'\"]+" src/constants.ts)
+
+          cat > ".changeset/renovate-nearcore-${VERSION}.md" <<EOF
+          ---
+          "near-sandbox": patch
+          ---
+
+          Update nearcore version to ${VERSION}
+          EOF
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .changeset/
+          git commit -C HEAD --amend --no-edit
+          git push --force
