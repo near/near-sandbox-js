@@ -1,4 +1,4 @@
 /**
  * Default version of NEAR Sandbox binary to download and use
  */
-export const DEFAULT_NEAR_SANDBOX_VERSION = '2.13.4';
+export const DEFAULT_NEAR_SANDBOX_VERSION = '2.14.0-rc.4';
